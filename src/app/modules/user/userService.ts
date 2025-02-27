@@ -5,6 +5,8 @@ import { hash } from "bcrypt"
 import { Request } from "express";
 import jwt, { JwtPayload } from "jsonwebtoken"
 import { jwtHelpers } from "../../helper/jwtHelper";
+import { OTPFn } from "../../helper/OTPFn";
+import { myCache } from "../../../app";
 
 const prisma = new PrismaClient();
 
@@ -28,16 +30,43 @@ const createUserIntoDB = async (payload: User) => {
         }
     })
 
+    OTPFn(payload.email)
+
     return result
 }
 
 
-const verifyUser = async (req : Request) => {
-    const token = req.headers.authorization
-    const payload = req.body
-    const userInfo = token && jwtHelpers.tokenVerifier(token) as JwtPayload
+// const verifyUser = async (req: Request) => {
+//     const token = req.headers.authorization
+//     const payload = req.body
+//     const userInfo = token && jwtHelpers.tokenVerifier(token) as JwtPayload
 
 
+// }
+
+const verifyOTP = async (req: Request) => {
+    const email = req.query.email as string
+    console.log(email)
+    
+    const otp = req.body
+    const getOTP = myCache.get(email)
+    console.log(getOTP, otp);
+    
+    if (!getOTP) {
+        throw new ApiError(StatusCodes.NOT_FOUND, "OTP is expired")
+    }
+    if (getOTP !== parseInt(otp.otp)) {
+        throw new ApiError(StatusCodes.UNAUTHORIZED, "OTP is not valid")
+    }
+    const result = await prisma.user.update({
+        where: {
+            email: email
+        },
+        data: {
+            status: 'ACTIVE'
+        }
+    })
+    return true
 }
 
 
@@ -69,4 +98,4 @@ const updateUserFromDB = async (req: Request) => {
 }
 
 
-export const userServices = { createUserIntoDB, updateUserFromDB }
+export const userServices = { createUserIntoDB, updateUserFromDB, verifyOTP }

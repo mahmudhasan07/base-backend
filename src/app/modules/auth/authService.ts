@@ -2,6 +2,8 @@ import { PrismaClient } from "@prisma/client";
 import { compare } from "bcrypt";
 import { jwtHelpers } from "../../helper/jwtHelper";
 import { Secret } from "jsonwebtoken";
+import ApiError from "../../error/ApiErrors";
+import { OTPFn } from "../../helper/OTPFn";
 
 const prisma = new PrismaClient();
 const logInFromDB = async (payload: { email: string, password: string }) => {
@@ -16,6 +18,11 @@ const logInFromDB = async (payload: { email: string, password: string }) => {
     const comparePassword = await compare(payload.password, findUser.password)
     if (!comparePassword) {
         throw new Error("Invalid password")
+    }
+
+    if (findUser.status === "PENDING") {
+        OTPFn(findUser.email)
+        throw new ApiError(401, "Please check your email address to verify your account")
     }
     const { password, ...userInfo } = findUser
     const token = jwtHelpers.tokenCreator(userInfo) as Secret
@@ -35,5 +42,5 @@ const forgetPassword = async (payload: { email: string }) => {
     return token
 }
 
-export const authService = {logInFromDB, forgetPassword} 
+export const authService = { logInFromDB, forgetPassword }
 
