@@ -20,6 +20,8 @@ model User {
   role     Role    @default(USER)
   status   Status  @default(PENDING)
   password String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Product {
@@ -31,6 +33,8 @@ model Product {
   color       String[]
   price       Float
   stock       Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Cart {
@@ -38,6 +42,8 @@ model Cart {
   userId    String
   productId String
   quantity  Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Order {
@@ -47,6 +53,7 @@ model Order {
   quantity  Int
   status    String
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 enum Role {
