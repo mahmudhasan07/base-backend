@@ -7,15 +7,28 @@ import GlobalErrorHandler from './app/middleware/globalErrorHandler';
 import { MongoClient } from "mongodb"
 import { StatusCodes } from 'http-status-codes';
 import { PrismaConnection } from './shared/PrismaConnection';
+import path from 'path';
 
-export const myCache = new NodeCache({ stdTTL: 180 })
+export const myCache = new NodeCache({ stdTTL: 300 })
 const app = express();
+
+export const corsOptions = {
+    origin: [
+        // "https://tasneem-social-frontend.netlify.app",
+        "http://localhost:3000",
+    ],
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true,
+};
 app.use(express.json());
-app.use(cors());
+app.use(cors(corsOptions));
 
 app.get('/', (req, res) => {
     res.send('Welcome to development world');
 });
+
+app.use("/uploads", express.static(path.join(__dirname, "..", "uploads")));
 
 const connectDB = async () => {
     try {
