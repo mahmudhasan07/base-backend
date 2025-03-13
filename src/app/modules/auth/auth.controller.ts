@@ -12,9 +12,8 @@ const logInUserController = catchAsync(async (req: Request, res: Response) => {
 
 
 const verifyOtp = catchAsync(async (req: Request, res: Response) => {
-    const email = req.body.email;
-    const otp = req.body.otp;
-    const result = await authService.verifyOtp({ email, otp });
+    const payload = req.body
+    const result = await authService.verifyOtp(payload);
     sendResponse(res, { statusCode: StatusCodes.OK, success: true, message: "OTP verified successfully", data: result })
 
 })

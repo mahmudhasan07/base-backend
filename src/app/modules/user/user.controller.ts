@@ -11,12 +11,22 @@ const createUserController = catchAsync(async (req: Request, res: Response) => {
 })
 
 const OTPVerifyController = catchAsync(async (req: Request, res: Response) => {
-    const result = await userServices.verifyOTP(req)
+
+    const payload = req.body
+
+    const result = await userServices.verifyOTP(payload)
     sendResponse(res, { statusCode: StatusCodes.OK, message: "OTP verified successfully", success: true })
 })
 
 const updateUserController = catchAsync(async (req: Request, res: Response) => {
-    const result = await userServices.updateUserFromDB(req) 
+
+
+
+    const payload = req.body
+    const token = req.headers.authorization
+
+
+    const result = await userServices.passwordChangeIntoDB(payload, token)
     sendResponse(res, { statusCode: StatusCodes.OK, message: "User updated successfully", data: result, success: true })
 })
 

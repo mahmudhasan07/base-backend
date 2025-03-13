@@ -2,11 +2,9 @@ import { PrismaClient, User } from "@prisma/client";
 import ApiError from "../../error/ApiErrors";
 import { StatusCodes } from "http-status-codes";
 import { hash } from "bcrypt"
-import { Request } from "express";
 import jwt, { JwtPayload } from "jsonwebtoken"
-import { jwtHelpers } from "../../helper/jwtHelper";
 import { OTPFn } from "../../helper/OTPFn";
-import { myCache } from "../../../app";
+import OTPVerify from "../../helper/OTPVerify";
 
 const prisma = new PrismaClient();
 
@@ -35,45 +33,17 @@ const createUserIntoDB = async (payload: User) => {
     return result
 }
 
+const verifyOTP = async (payload: { email: string, otp: number }) => {
 
-// const verifyUser = async (req: Request) => {
-//     const token = req.headers.authorization
-//     const payload = req.body
-//     const userInfo = token && jwtHelpers.tokenVerifier(token) as JwtPayload
+    const { message, token } = await OTPVerify(payload)
 
-
-// }
-
-const verifyOTP = async (req: Request) => {
-    const email = req.query.email as string
-    console.log(email)
-    
-    const otp = req.body
-    const getOTP = myCache.get(email)
-    console.log(getOTP, otp);
-    
-    if (!getOTP) {
-        throw new ApiError(StatusCodes.NOT_FOUND, "OTP is expired")
-    }
-    if (getOTP !== parseInt(otp.otp)) {
-        throw new ApiError(StatusCodes.UNAUTHORIZED, "OTP is not valid")
-    }
-    const result = await prisma.user.update({
-        where: {
-            email: email
-        },
-        data: {
-            status: 'ACTIVE'
-        }
-    })
-    return true
+    return { accessToken: token }
 }
 
 
 
-const updateUserFromDB = async (req: Request) => {
-    const token = req.headers.authorization
-    const payload = req.body
+const passwordChangeIntoDB = async (token: string, payload: any) => {
+
     const userInfo = token && jwt.decode(token) as { id: string, email: string }
     const findUser = await prisma.user.findUnique({
         where: {
@@ -98,4 +68,4 @@ const updateUserFromDB = async (req: Request) => {
 }
 
 
-export const userServices = { createUserIntoDB, updateUserFromDB, verifyOTP }
+export const userServices = { createUserIntoDB, passwordChangeIntoDB, verifyOTP }
