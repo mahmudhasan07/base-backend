@@ -1,20 +1,19 @@
 import express, { NextFunction, Request, Response } from 'express';
 import cors from 'cors';
-import { prot } from './config/secret';
 import NodeCache from 'node-cache';
 import router from './app/route/route';
 import GlobalErrorHandler from './app/middleware/globalErrorHandler';
 import { MongoClient } from "mongodb"
 import { StatusCodes } from 'http-status-codes';
-import { PrismaConnection } from './shared/PrismaConnection';
+import { PrismaConnection } from './app/DB/PrismaConnection';
 import path from 'path';
+import fs from 'fs';
 
 export const myCache = new NodeCache({ stdTTL: 300 })
 const app = express();
 
 export const corsOptions = {
     origin: [
-        // "https://tasneem-social-frontend.netlify.app",
         "http://localhost:3000",
     ],
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
@@ -28,7 +27,16 @@ app.get('/', (req, res) => {
     res.send('Welcome to development world');
 });
 
-app.use("/uploads", express.static(path.join(__dirname, "..", "uploads")));
+const uploadPath = path.join(__dirname, "..", "uploads");
+
+// Ensure uploads folder exists
+if (!fs.existsSync(uploadPath)) {
+    fs.mkdirSync(uploadPath, { recursive: true });
+    console.log("Uploads folder created successfully!");
+}
+
+app.use("/uploads", express.static(uploadPath));
+
 
 const connectDB = async () => {
     try {
@@ -60,6 +68,4 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 
 
 
-app.listen(prot, () => {
-    console.log(`Server is running on port ${prot}`);
-});
+export default app

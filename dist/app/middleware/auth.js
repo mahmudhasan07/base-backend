@@ -22,7 +22,7 @@ const auth = (...roles) => {
             if (!token) {
                 throw new ApiErrors_1.default(http_status_codes_1.StatusCodes.UNAUTHORIZED, "You are not authorized!");
             }
-            const verifiedUser = jwtHelper_1.jwtHelpers.tokenVerifier(token);
+            const verifiedUser = jwtHelper_1.jwtHelpers.verifyToken(token);
             req.user = verifiedUser;
             if (roles.length && !roles.includes(verifiedUser.role)) {
                 throw new ApiErrors_1.default(http_status_codes_1.StatusCodes.FORBIDDEN, "Forbidden, You are not authorized!");

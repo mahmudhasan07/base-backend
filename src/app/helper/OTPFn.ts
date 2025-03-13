@@ -1,11 +1,17 @@
 import nodemailer from 'nodemailer';
-import { myCache } from '../../app';
+import crypto from 'crypto';
+import { PrismaClient } from '@prisma/client';
 // import { myCache } from '../app';
+const prisma = new PrismaClient();
 
+const OTP_EXPIRY_TIME = 5 * 60 * 1000; // OTP valid for 5 minutes
+const expiry = new Date(Date.now() + OTP_EXPIRY_TIME);
 
 export const OTPFn = async (email: string) => {
 
     const otp = Math.floor(100000 + Math.random() * 900000);
+
+
     // console.log(`OTP for ${email} is ${otp}`);
     const transporter = nodemailer.createTransport({
         service: 'gmail', // Use your email service provider
@@ -37,7 +43,34 @@ export const OTPFn = async (email: string) => {
 
     // Send mail with defined transport object
     await transporter.sendMail(mailOptions);
-    myCache.set(email, otp);
-    return otp;
+    // myCache.set(email, otp);
+
+    const finderOTPUser = await prisma.otp.findUnique({
+        where: {
+            email: email
+        }
+    })
+    if (finderOTPUser) {
+        const updateOTP = await prisma.otp.update({
+            where: {
+                email: email
+            },
+            data: {
+                otp: otp,
+                expiry: expiry
+            }
+        })
+        return updateOTP
+    }
+    else {
+        const createOTP = await prisma.otp.create({
+            data: {
+                email: email,
+                otp: otp,
+                expiry: expiry
+            }
+        })
+        return createOTP
+    }
 
 }

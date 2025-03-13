@@ -4,6 +4,9 @@ import { jwtHelpers } from "../../helper/jwtHelper";
 import { Secret } from "jsonwebtoken";
 import ApiError from "../../error/ApiErrors";
 import { OTPFn } from "../../helper/OTPFn";
+import { StatusCodes } from "http-status-codes";
+import OTPVerify from "../../helper/OTPVerify";
+import exp from "constants";
 
 const prisma = new PrismaClient();
 const logInFromDB = async (payload: { email: string, password: string }) => {
@@ -25,9 +28,17 @@ const logInFromDB = async (payload: { email: string, password: string }) => {
         throw new ApiError(401, "Please check your email address to verify your account")
     }
     const { password, ...userInfo } = findUser
-    const token = jwtHelpers.tokenCreator(userInfo) as Secret
+    const token = jwtHelpers.generateToken(userInfo, {expiresIn: "1hr"})
     return { accessToken: token, userInfo }
 }
+
+
+const verifyOtp = async (payload: { email: string; otp: number }) => {
+    // Check if the user exists
+    const { message } = await OTPVerify(payload)
+    return
+
+};
 
 const forgetPassword = async (payload: { email: string }) => {
     const findUser = await prisma.user.findUnique({
@@ -38,9 +49,9 @@ const forgetPassword = async (payload: { email: string }) => {
     if (!findUser) {
         throw new Error("User not found")
     }
-    const token = jwtHelpers.tokenCreator({ email: findUser.email, id: findUser?.id, role: findUser?.role }) as Secret
+    const token = jwtHelpers.generateToken({ email: findUser.email, id: findUser?.id, role: findUser?.role }, { expiresIn: "1hr" }) as Secret
     return token
 }
 
-export const authService = { logInFromDB, forgetPassword }
+export const authService = { logInFromDB, forgetPassword, verifyOtp }
 
