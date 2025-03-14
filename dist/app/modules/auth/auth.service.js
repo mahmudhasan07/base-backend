@@ -49,13 +49,23 @@ const logInFromDB = (payload) => __awaiter(void 0, void 0, void 0, function* () 
         throw new ApiErrors_1.default(401, "Please check your email address to verify your account");
     }
     const { password } = findUser, userInfo = __rest(findUser, ["password"]);
-    const token = jwtHelper_1.jwtHelpers.generateToken(userInfo, { expiresIn: "1hr" });
+    const token = jwtHelper_1.jwtHelpers.generateToken(userInfo, { expiresIn: "24 hr" });
     return { accessToken: token, userInfo };
 });
 const verifyOtp = (payload) => __awaiter(void 0, void 0, void 0, function* () {
     // Check if the user exists
     const { message } = yield (0, OTPVerify_1.default)(payload);
-    return;
+    if (message) {
+        const updateUserInfo = yield prisma.user.update({
+            where: {
+                email: payload.email
+            },
+            data: {
+                status: "ACTIVE"
+            }
+        });
+        return updateUserInfo;
+    }
 });
 const forgetPassword = (payload) => __awaiter(void 0, void 0, void 0, function* () {
     const findUser = yield prisma.user.findUnique({
@@ -67,6 +77,7 @@ const forgetPassword = (payload) => __awaiter(void 0, void 0, void 0, function* 
         throw new Error("User not found");
     }
     const token = jwtHelper_1.jwtHelpers.generateToken({ email: findUser.email, id: findUser === null || findUser === void 0 ? void 0 : findUser.id, role: findUser === null || findUser === void 0 ? void 0 : findUser.role }, { expiresIn: "1hr" });
-    return token;
+    (0, OTPFn_1.OTPFn)(findUser.email);
+    return { accessToken: token };
 });
 exports.authService = { logInFromDB, forgetPassword, verifyOtp };

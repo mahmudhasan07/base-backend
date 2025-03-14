@@ -1,6 +1,8 @@
 import nodemailer from 'nodemailer';
 import crypto from 'crypto';
 import { PrismaClient } from '@prisma/client';
+import ApiError from '../error/ApiErrors';
+import { StatusCodes } from 'http-status-codes';
 // import { myCache } from '../app';
 const prisma = new PrismaClient();
 
@@ -50,27 +52,26 @@ export const OTPFn = async (email: string) => {
             email: email
         }
     })
-    if (finderOTPUser) {
-        const updateOTP = await prisma.otp.update({
-            where: {
-                email: email
-            },
-            data: {
-                otp: otp,
-                expiry: expiry
-            }
-        })
-        return updateOTP
+
+    if (!finderOTPUser) {
+        throw new ApiError(StatusCodes.NOT_FOUND, "User not found");
     }
-    else {
-        const createOTP = await prisma.otp.create({
-            data: {
-                email: email,
-                otp: otp,
-                expiry: expiry
-            }
-        })
-        return createOTP
-    }
+
+    const updateOTP = await prisma.otp.upsert({
+        where: {
+            email: email
+        },
+        update: {
+            otp: otp,
+            expiry: expiry
+        },
+        create: {
+            email: email,
+            otp: otp,
+            expiry: expiry
+        }
+    })
+    return updateOTP
+
 
 }

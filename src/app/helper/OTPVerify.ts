@@ -1,20 +1,26 @@
 import { PrismaClient } from "@prisma/client";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import { jwtHelpers } from "./jwtHelper";
+import ApiError from "../error/ApiErrors";
+import { StatusCodes } from "http-status-codes";
 
 const prisma = new PrismaClient();
 
 const OTPVerify = async (payload: { otp: number; token?: string, email?: string }) => {
+
     // Verify the token
-    let decoded: JwtPayload;
-    try {
-        if (!payload.token) {
-            throw new Error("Token is required");
+    let decoded: JwtPayload = {};
+    if (payload.token) {
+        try {
+            if (!payload.token) {
+                throw new ApiError(StatusCodes.BAD_REQUEST, "Token is required");
+            }
+            decoded = jwtHelpers.verifyToken(payload?.token);
+        } catch (error) {
+            throw new ApiError(StatusCodes.CONFLICT, "Invalid or expired token");
         }
-        decoded = jwtHelpers.verifyToken(payload.token);
-    } catch (error) {
-        throw new Error("Invalid or expired token");
     }
+
 
     // Find user by email
     const findUser = await prisma.user.findUnique({
@@ -24,7 +30,7 @@ const OTPVerify = async (payload: { otp: number; token?: string, email?: string 
     });
 
     if (!findUser) {
-        throw new Error("User not found");
+        throw new ApiError(StatusCodes.NOT_FOUND, "User not found");
     }
 
     // Find OTP record
@@ -39,7 +45,7 @@ const OTPVerify = async (payload: { otp: number; token?: string, email?: string 
     });
 
     if (!otpRecord) {
-        throw new Error("OTP not found");
+        throw new ApiError(StatusCodes.UNAUTHORIZED, "OTP not found");
     }
 
     // Check if OTP is expired (valid for 5 minutes)
@@ -47,22 +53,27 @@ const OTPVerify = async (payload: { otp: number; token?: string, email?: string 
     const otpExpiryTime = otpRecord.expiry && new Date(otpRecord.expiry) as any;
 
     if (currentTime > otpExpiryTime) {
-        throw new Error("OTP expired");
+        throw new ApiError(StatusCodes.BAD_REQUEST, "OTP expired");
     }
 
     // Verify OTP
     if (otpRecord && String(otpRecord.otp) !== String(payload.otp)) {
-        throw new Error("Invalid OTP");
+        throw new ApiError(StatusCodes.CONFLICT, "Invalid OTP");
     }
 
     // Generate new token after successful verification
-    const newToken = jwt.sign(
+    const newToken = jwtHelpers.generateToken(
         { email: findUser.email, id: findUser.id, role: findUser.role },
-        process.env.JWT_SECRET as string,
         { expiresIn: "1h" }
     );
 
-    const result = { message: "OTP verified successfully", token: newToken };
+    await prisma.otp.delete({
+        where: {
+            email: decoded.email || payload.email
+        }
+    })
+
+    const result = { message: "OTP verified successfully", accessToken: newToken };
 
     return result
 };

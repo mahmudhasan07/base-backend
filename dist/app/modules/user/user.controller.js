@@ -21,12 +21,16 @@ const createUserController = (0, catchAsync_1.default)((req, res) => __awaiter(v
     const result = yield user_service_1.userServices.createUserIntoDB(req.body);
     (0, sendResponse_1.default)(res, { statusCode: http_status_codes_1.StatusCodes.CREATED, message: "Please check your email address to verify your account", data: result, success: true });
 }));
-const OTPVerifyController = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const result = yield user_service_1.userServices.verifyOTP(req);
-    (0, sendResponse_1.default)(res, { statusCode: http_status_codes_1.StatusCodes.OK, message: "OTP verified successfully", success: true });
-}));
-const updateUserController = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const result = yield user_service_1.userServices.updateUserFromDB(req);
+// const OTPVerifyController = catchAsync(async (req: Request, res: Response) => {
+//     const payload = req.body
+//     const result = await userServices.verifyOTP(payload)
+//     sendResponse(res, { statusCode: StatusCodes.OK, message: "OTP verified successfully", success: true })
+// })
+const passwordChangeController = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const payload = req.body;
+    const token = req.headers.authorization;
+    // console.log(token);
+    const result = yield user_service_1.userServices.passwordChangeIntoDB(payload, token);
     (0, sendResponse_1.default)(res, { statusCode: http_status_codes_1.StatusCodes.OK, message: "User updated successfully", data: result, success: true });
 }));
-exports.userController = { createUserController, updateUserController, OTPVerifyController };
+exports.userController = { createUserController, passwordChangeController };

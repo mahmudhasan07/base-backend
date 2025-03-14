@@ -15,6 +15,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.OTPFn = void 0;
 const nodemailer_1 = __importDefault(require("nodemailer"));
 const client_1 = require("@prisma/client");
+const ApiErrors_1 = __importDefault(require("../error/ApiErrors"));
+const http_status_codes_1 = require("http-status-codes");
 // import { myCache } from '../app';
 const prisma = new client_1.PrismaClient();
 const OTP_EXPIRY_TIME = 5 * 60 * 1000; // OTP valid for 5 minutes
@@ -56,27 +58,23 @@ const OTPFn = (email) => __awaiter(void 0, void 0, void 0, function* () {
             email: email
         }
     });
-    if (finderOTPUser) {
-        const updateOTP = yield prisma.otp.update({
-            where: {
-                email: email
-            },
-            data: {
-                otp: otp,
-                expiry: expiry
-            }
-        });
-        return updateOTP;
+    if (!finderOTPUser) {
+        throw new ApiErrors_1.default(http_status_codes_1.StatusCodes.NOT_FOUND, "User not found");
     }
-    else {
-        const createOTP = yield prisma.otp.create({
-            data: {
-                email: email,
-                otp: otp,
-                expiry: expiry
-            }
-        });
-        return createOTP;
-    }
+    const updateOTP = yield prisma.otp.upsert({
+        where: {
+            email: email
+        },
+        update: {
+            otp: otp,
+            expiry: expiry
+        },
+        create: {
+            email: email,
+            otp: otp,
+            expiry: expiry
+        }
+    });
+    return updateOTP;
 });
 exports.OTPFn = OTPFn;

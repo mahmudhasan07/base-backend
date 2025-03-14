@@ -5,7 +5,7 @@ import { authRoutes } from "../modules/auth/auth.routes"
 const router = Router()
 const routes = [
     {
-        path: "/user",
+        path: "/users",
         component: userRoutes
     },
     {

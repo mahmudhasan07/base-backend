@@ -5,7 +5,7 @@ const sendResponse = (res, jsonData) => {
         success: jsonData.success,
         message: jsonData.message,
         meta: jsonData.meta || null || undefined,
-        result: jsonData.data || null || undefined,
+        data: jsonData.data || null || undefined,
     });
 };
 exports.default = sendResponse;

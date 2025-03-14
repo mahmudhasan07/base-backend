@@ -25,6 +25,15 @@ const createUserIntoDB = async (payload: User) => {
         data: {
             ...payload,
             password: newPass
+        },
+        select: {
+            id: true,
+            name: true,
+            email: true,
+            role: true,
+            status : true,
+            createdAt: true,
+            updatedAt: true
         }
     })
 
@@ -33,18 +42,19 @@ const createUserIntoDB = async (payload: User) => {
     return result
 }
 
-const verifyOTP = async (payload: { email: string, otp: number }) => {
+// const verifyOTP = async (payload: { email: string, otp: number }) => {
 
-    const { message, token } = await OTPVerify(payload)
+//     const { message, token } = await OTPVerify(payload)
 
-    return { accessToken: token }
-}
+//     return true
+// }
 
 
 
-const passwordChangeIntoDB = async (token: string, payload: any) => {
+const passwordChangeIntoDB = async ( payload: any, token: string) => {
 
     const userInfo = token && jwt.decode(token) as { id: string, email: string }
+
     const findUser = await prisma.user.findUnique({
         where: {
             email: userInfo && userInfo?.email
@@ -68,4 +78,4 @@ const passwordChangeIntoDB = async (token: string, payload: any) => {
 }
 
 
-export const userServices = { createUserIntoDB, passwordChangeIntoDB, verifyOTP }
+export const userServices = { createUserIntoDB, passwordChangeIntoDB }

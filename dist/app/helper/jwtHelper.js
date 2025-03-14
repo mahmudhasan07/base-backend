@@ -8,7 +8,7 @@ const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const config_1 = __importDefault(require("../../config"));
 const generateToken = (payload, expiresIn) => {
     // const token = jwt.sign(payload, secret, options);
-    const token = jsonwebtoken_1.default.sign(payload, config_1.default.secretToken, { expiresIn: expiresIn, algorithm: 'HS256', });
+    const token = jsonwebtoken_1.default.sign(payload, config_1.default.secretToken, { expiresIn: expiresIn.expiresIn, algorithm: 'HS256', });
     return token;
 };
 const verifyToken = (token) => {

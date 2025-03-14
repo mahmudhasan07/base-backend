@@ -23,9 +23,8 @@ const logInUserController = (0, catchAsync_1.default)((req, res) => __awaiter(vo
     (0, sendResponse_1.default)(res, { statusCode: http_status_codes_1.StatusCodes.OK, success: true, message: "User login successfully", data: result });
 }));
 const verifyOtp = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const email = req.body.email;
-    const otp = req.body.otp;
-    const result = yield auth_service_1.authService.verifyOtp({ email, otp });
+    const payload = req.body;
+    const result = yield auth_service_1.authService.verifyOtp(payload);
     (0, sendResponse_1.default)(res, { statusCode: http_status_codes_1.StatusCodes.OK, success: true, message: "OTP verified successfully", data: result });
 }));
 const forgetPasswordController = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {

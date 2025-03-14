@@ -6,7 +6,7 @@ const auth_routes_1 = require("../modules/auth/auth.routes");
 const router = (0, express_1.Router)();
 const routes = [
     {
-        path: "/user",
+        path: "/users",
         component: user_routes_1.userRoutes
     },
     {

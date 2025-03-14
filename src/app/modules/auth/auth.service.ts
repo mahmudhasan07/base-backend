@@ -28,15 +28,31 @@ const logInFromDB = async (payload: { email: string, password: string }) => {
         throw new ApiError(401, "Please check your email address to verify your account")
     }
     const { password, ...userInfo } = findUser
-    const token = jwtHelpers.generateToken(userInfo, {expiresIn: "1hr"})
+    const token = jwtHelpers.generateToken(userInfo, { expiresIn: "24 hr" })
     return { accessToken: token, userInfo }
 }
 
 
 const verifyOtp = async (payload: { email: string; otp: number }) => {
     // Check if the user exists
+
+
+
+
     const { message } = await OTPVerify(payload)
-    return
+
+    if (message) {
+        const updateUserInfo = await prisma.user.update({
+            where: {
+                email: payload.email
+            },
+            data: {
+                status: "ACTIVE"
+            }
+        })
+
+        return updateUserInfo
+    }
 
 };
 
@@ -50,7 +66,8 @@ const forgetPassword = async (payload: { email: string }) => {
         throw new Error("User not found")
     }
     const token = jwtHelpers.generateToken({ email: findUser.email, id: findUser?.id, role: findUser?.role }, { expiresIn: "1hr" }) as Secret
-    return token
+    OTPFn(findUser.email)
+    return { accessToken: token }
 }
 
 export const authService = { logInFromDB, forgetPassword, verifyOtp }

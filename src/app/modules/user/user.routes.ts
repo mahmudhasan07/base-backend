@@ -6,8 +6,8 @@ import { UserValidation } from "./user.validation";
 const route = Router()
 
 route.post('/create', validateRequest(UserValidation), userController.createUserController)
-route.post("/verifyOTP", userController.OTPVerifyController)
-route.put('/change-password', userController.updateUserController)
+// route.post("/verifyOTP", userController.OTPVerifyController)
+route.patch('/change-password', userController.passwordChangeController)
 
 
 export const userRoutes = route
