@@ -47,15 +47,6 @@ export const OTPFn = async (email: string) => {
     await transporter.sendMail(mailOptions);
     // myCache.set(email, otp);
 
-    const finderOTPUser = await prisma.otp.findUnique({
-        where: {
-            email: email
-        }
-    })
-
-    if (!finderOTPUser) {
-        throw new ApiError(StatusCodes.NOT_FOUND, "User not found");
-    }
 
     const updateOTP = await prisma.otp.upsert({
         where: {
@@ -71,6 +62,9 @@ export const OTPFn = async (email: string) => {
             expiry: expiry
         }
     })
+
+   
+
     return updateOTP
 
 

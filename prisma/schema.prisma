@@ -14,16 +14,19 @@ datasource db {
 }
 
 model User {
-  id       String  @id @default(auto()) @map("_id") @db.ObjectId
-  email    String  @unique
-  name     String?
-  role     Role    @default(USER)
-  status   Status  @default(PENDING)
-  password String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id        String          @id @default(auto()) @map("_id") @db.ObjectId
+  email     String          @unique
+  name      String?
+  role      Role            @default(USER)
+  status    Status          @default(PENDING)
+  password  String
+  fcmToken  String?
+  image     String?
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+  receiver  Notifications[] @relation("receiverDetails")
+  sender    Notifications[] @relation("senderDetails")
 }
-
 
 model Otp {
   id        String    @id @default(auto()) @map("_id") @db.ObjectId
@@ -45,12 +48,12 @@ model Product {
   color       String[]
   price       Float
   stock       Int
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 model Cart {
-  id        String @id @default(auto()) @map("_id") @db.ObjectId
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
   userId    String
   productId String
   quantity  Int
@@ -66,6 +69,19 @@ model Order {
   status    String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model Notifications {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  receiverId String   @db.ObjectId
+  senderId   String?  @db.ObjectId
+  title      String
+  body       String
+  read       Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  receiver   User     @relation("receiverDetails", fields: [receiverId], references: [id])
+  sender     User?    @relation("senderDetails", fields: [senderId], references: [id])
 }
 
 enum Role {

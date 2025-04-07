@@ -4,6 +4,7 @@ import catchAsync from "../../../shared/catchAsync";
 import sendResponse from "../../middleware/sendResponse";
 import { StatusCodes } from "http-status-codes";
 import { authService } from "./auth.service";
+import { decode } from "jsonwebtoken";
 
 const logInUserController = catchAsync(async (req: Request, res: Response) => {
     const result = await authService.logInFromDB(req.body);
@@ -12,7 +13,12 @@ const logInUserController = catchAsync(async (req: Request, res: Response) => {
 
 
 const verifyOtp = catchAsync(async (req: Request, res: Response) => {
-    const payload = req.body
+    const body = req.body as any
+    const token = req.headers.authorization as string
+
+    const {email} = decode(token) as any
+
+    const payload = {...body,email}
     const result = await authService.verifyOtp(payload);
     sendResponse(res, { statusCode: StatusCodes.OK, success: true, message: "OTP verified successfully", data: result })
 

@@ -23,13 +23,13 @@ const forgotPassword = z.object({
 });
 
 const verifyOtp = z.object({
-    email: z
-        .string({
-            required_error: "Email is required!",
-        })
-        .email({
-            message: "Invalid email format!",
-        }),
+    // email: z
+    //     .string({
+    //         required_error: "Email is required!",
+    //     })
+    //     .email({
+    //         message: "Invalid email format!",
+    //     }),
     otp: z.number({
         required_error: "OTP is required!",
     }),

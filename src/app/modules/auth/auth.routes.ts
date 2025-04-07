@@ -13,4 +13,5 @@ route.post(
   );
 route.post('/forget-password', validateRequest(authValidation.forgotPassword), authController.forgetPasswordController)
 
+
 export const authRoutes = route
