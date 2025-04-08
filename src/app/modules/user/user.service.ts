@@ -70,10 +70,11 @@ const passwordChangeIntoDB = async (payload: any, token: string) => {
 
 const updateUserIntoDB = async (id: string, payload: any, image: any) => {
 
+
     const userImage = image?.location
 
     try {
-        const update = await prisma.user.update({
+        const result = await prisma.user.update({
             where: {
                 id
             },
@@ -82,8 +83,17 @@ const updateUserIntoDB = async (id: string, payload: any, image: any) => {
                 image: userImage ?? undefined
             }
         })
+        const updateDetails = {
+            id: result.id,
+            name: result.name,
+            email: result.email,
+            image: result.image,
+            role: result.role,
+            createdAt: result.createdAt,
+            updatedAt: result.updatedAt,
+          }
 
-        return update
+        return updateDetails
 
     } catch (error) {
         throw new ApiError(StatusCodes.BAD_REQUEST, "User not found")

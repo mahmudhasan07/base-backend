@@ -19,7 +19,7 @@ const logInFromDB = async (payload: { email: string, password: string, fcmToken?
     }
     const comparePassword = await compare(payload.password, findUser.password)
     if (!comparePassword) {
-        throw new ApiError(StatusCodes.UNAUTHORIZED, "Invalid password")
+        throw new ApiError(StatusCodes.NON_AUTHORITATIVE_INFORMATION, "Invalid password")
     }
 
     if (findUser.status === "PENDING") {
