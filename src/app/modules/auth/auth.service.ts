@@ -38,7 +38,13 @@ const logInFromDB = async (payload: { email: string, password: string, fcmToken?
         })
     }
 
-    const { password, ...userInfo } = findUser
+    // const { password, ...userInfo } = findUser
+    const userInfo = {
+        email: findUser.email,
+        id: findUser.id,
+        role: findUser.role,
+        fcmToken: findUser.fcmToken,
+    }
     const token = jwtHelpers.generateToken(userInfo, { expiresIn: "24 hr" })
     return { accessToken: token, userInfo }
 }

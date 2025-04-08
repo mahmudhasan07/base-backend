@@ -1,8 +1,6 @@
 import nodemailer from 'nodemailer';
-import crypto from 'crypto';
 import { PrismaClient } from '@prisma/client';
-import ApiError from '../error/ApiErrors';
-import { StatusCodes } from 'http-status-codes';
+
 // import { myCache } from '../app';
 const prisma = new PrismaClient();
 
