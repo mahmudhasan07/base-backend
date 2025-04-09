@@ -5,6 +5,7 @@ import { hash } from "bcrypt"
 import jwt, { JwtPayload } from "jsonwebtoken"
 import { OTPFn } from "../../helper/OTPFn";
 import OTPVerify from "../../helper/OTPVerify";
+import { getImageUrl } from "../../helper/uploadFile";
 
 const prisma = new PrismaClient();
 
@@ -71,7 +72,7 @@ const passwordChangeIntoDB = async (payload: any, token: string) => {
 const updateUserIntoDB = async (id: string, payload: any, image: any) => {
 
 
-    const userImage = image?.location
+    const userImage = await getImageUrl(image)
 
     try {
         const result = await prisma.user.update({
