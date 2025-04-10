@@ -22,16 +22,21 @@ model User {
   password  String
   fcmToken  String?
   image     String?
+  latitude  Float?
+  longitude Float?
+  location  String?
+  isVerified Boolean         @default(false)
   createdAt DateTime        @default(now())
   updatedAt DateTime        @updatedAt
   receiver  Notifications[] @relation("receiverDetails")
   sender    Notifications[] @relation("senderDetails")
+  Review    Review[]
 }
 
 model Otp {
   id        String    @id @default(auto()) @map("_id") @db.ObjectId
   email     String    @unique
-  otp       Int?
+  otp       Int
   expiry    DateTime?
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
@@ -39,36 +44,58 @@ model Otp {
   @@map("otps")
 }
 
-model Product {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+model Service {
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
   name        String
   description String
-  size        String[]
-  discount    Float    @default(0)
-  color       String[]
   price       Float
-  stock       Int
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  image       String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  Review      Review[]
+  Booking     Booking[]
 }
 
-model Cart {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  userId    String
-  productId String
-  quantity  Int
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+model Booking {
+  id             String      @id @default(auto()) @map("_id") @db.ObjectId
+  userId         String
+  serviceId      String      @db.ObjectId
+  date           DateTime
+  description    String
+  location       String
+  latitude       Float?
+  longitude      Float?
+  isPaid         Boolean     @default(false)
+  paymentId      String?     @db.ObjectId
+  serviceDetails Service     @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  paymentDetails Payment?    @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+  status         OrderStatus @default(PENDING)
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt 
+  // Payment        Payment[]
 }
 
-model Order {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  userId    String
-  productId String
-  quantity  Int
-  status    String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+model Review {
+  id             String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId         String   @db.ObjectId
+  serviceId      String   @db.ObjectId
+  rating         Float
+  comment        String?
+  serviceDetails Service  @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  userDetails    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model Payment {
+  id        String    @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String    @db.ObjectId
+  amount    Float
+  bookingId String    @db.ObjectId
+  // bookDetails Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  Booking   Booking[]
 }
 
 model Notifications {
@@ -86,7 +113,14 @@ model Notifications {
 
 enum Role {
   USER
+  WORKER
   ADMIN
+}
+
+enum OrderStatus {
+  PENDING
+  COMPLETED
+  CANCELLED
 }
 
 enum Status {

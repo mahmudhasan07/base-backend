@@ -1,13 +1,13 @@
-import { PrismaClient, User } from "@prisma/client";
+import { User } from "@prisma/client";
 import ApiError from "../../error/ApiErrors";
 import { StatusCodes } from "http-status-codes";
-import { hash } from "bcrypt"
+import { compare, hash } from "bcrypt"
 import jwt, { JwtPayload } from "jsonwebtoken"
 import { OTPFn } from "../../helper/OTPFn";
 import OTPVerify from "../../helper/OTPVerify";
 import { getImageUrl } from "../../helper/uploadFile";
-
-const prisma = new PrismaClient();
+import { prisma } from "../../../utils/prisma";
+import { jwtHelpers } from "../../helper/jwtHelper";
 
 const createUserIntoDB = async (payload: User) => {
 
@@ -16,8 +16,12 @@ const createUserIntoDB = async (payload: User) => {
             email: payload.email
         }
     })
-    if (findUser) {
-        throw new ApiError(StatusCodes.CONFLICT, "User already exists")
+    if (findUser && findUser?.isVerified) {
+        throw new ApiError(StatusCodes.NOT_FOUND, "User already exists")
+    }
+    if (findUser && !findUser?.isVerified) {
+        await OTPFn(payload.email)
+        return
     }
 
     const newPass = await hash(payload.password, 10)
@@ -26,7 +30,6 @@ const createUserIntoDB = async (payload: User) => {
         data: {
             ...payload,
             password: newPass,
-            status: "ACTIVE"
         },
         select: {
             id: true,
@@ -38,15 +41,40 @@ const createUserIntoDB = async (payload: User) => {
             updatedAt: true
         }
     })
-    // OTPFn(payload.email)
+    OTPFn(payload.email)
     return result
 }
 
+const changePasswordIntoDB = async (id: string, payload: any) => {
 
-const passwordChangeIntoDB = async (payload: any, token: string) => {
+    const findUser = await prisma.user.findUnique({
+        where: {
+            id
+        }
+    })
+    if (!findUser) {
+        throw new ApiError(StatusCodes.NOT_FOUND, "User not found")
+    }
+    try {
+        await compare(payload.oldPassword, findUser.password)
+        const newPass = await hash(payload.newPassword, 10)
+        await prisma.user.update({
+            where: {
+                id
+            },
+            data: {
+                password: newPass
+            }
+        })
+        return
 
-    const userInfo = token && jwt.decode(token) as { id: string, email: string }
+    } catch {
+        throw new ApiError(StatusCodes.BAD_REQUEST, "Old password is incorrect")
+    }
+}
 
+const resetPasswordIntoDB = async (payload: any, token: string) => {
+    const userInfo = jwtHelpers.tokenDecoder(token) as JwtPayload
     const findUser = await prisma.user.findUnique({
         where: {
             email: userInfo && userInfo?.email
@@ -63,6 +91,15 @@ const passwordChangeIntoDB = async (payload: any, token: string) => {
         },
         data: {
             password: newPass
+        },
+        select : {
+            id: true,
+            name: true,
+            email: true,
+            role: true,
+            status: true,
+            createdAt: true,
+            updatedAt: true
         }
     })
 
@@ -92,7 +129,7 @@ const updateUserIntoDB = async (id: string, payload: any, image: any) => {
             role: result.role,
             createdAt: result.createdAt,
             updatedAt: result.updatedAt,
-          }
+        }
 
         return updateDetails
 
@@ -102,4 +139,4 @@ const updateUserIntoDB = async (id: string, payload: any, image: any) => {
 }
 
 
-export const userServices = { createUserIntoDB, passwordChangeIntoDB, updateUserIntoDB }
+export const userServices = { createUserIntoDB, resetPasswordIntoDB, updateUserIntoDB, changePasswordIntoDB }

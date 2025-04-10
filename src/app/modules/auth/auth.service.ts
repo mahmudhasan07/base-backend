@@ -41,14 +41,16 @@ const logInFromDB = async (payload: { email: string, password: string, fcmToken?
     // const { password, ...userInfo } = findUser
     const userInfo = {
         email: findUser.email,
+        name: findUser.name,
         id: findUser.id,
+        image : findUser.image,
         role: findUser.role,
+        status: findUser.status,
         fcmToken: findUser.fcmToken,
     }
     const token = jwtHelpers.generateToken(userInfo, { expiresIn: "24 hr" })
     return { accessToken: token, userInfo }
 }
-
 
 const verifyOtp = async (payload: { email: string; otp: number }) => {
 
@@ -60,7 +62,18 @@ const verifyOtp = async (payload: { email: string; otp: number }) => {
                 email: payload.email
             },
             data: {
-                status: "ACTIVE"
+                status: "ACTIVE",
+                isVerified: true
+            },
+            select: {
+                id: true,
+                name: true,
+                email: true,
+                role: true,
+                status: true,
+                isVerified: true,
+                createdAt: true,
+                updatedAt: true
             }
         })
         return updateUserInfo

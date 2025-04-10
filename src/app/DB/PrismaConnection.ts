@@ -22,7 +22,6 @@ export const PrismaConnection = async () => {
                 status: "ACTIVE",
             }
         })
-
         return
     }
 }

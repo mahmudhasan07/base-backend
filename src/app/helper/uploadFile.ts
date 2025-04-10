@@ -17,6 +17,7 @@ const s3Storage = multerS3({
   s3: s3,
   bucket: process.env.DO_SPACE_BUCKET || "", // Replace with your bucket name
   acl: "public-read", // Ensure files are publicly accessible
+  contentType: multerS3.AUTO_CONTENT_TYPE, // Automatically detect content type
   key: (req, file, cb) => {
     const uniqueName = `${Date.now()}-${file.originalname}`;
     cb(null, uniqueName); // File name in Spaces
@@ -53,11 +54,13 @@ export const getImageUrl = async (file: Express.MulterS3.File) => {
 // Single image uploads
 const uploadProfileImage = upload.single("profileImage");
 const uploadFoodImages = upload.single("foodImage");
+const serviceImage = upload.single("serviceImage");
 
 // Multiple image uploads
 
 export const fileUploader = {
   upload,
   uploadProfileImage,
-  uploadFoodImages
+  uploadFoodImages,
+  serviceImage
 };

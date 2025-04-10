@@ -1,15 +1,11 @@
-import nodemailer from 'nodemailer';
 import { PrismaClient } from '@prisma/client';
 import { sendEmailFn } from './sendMailFn';
 
-// import { myCache } from '../app';
 const prisma = new PrismaClient();
 
-const OTP_EXPIRY_TIME = 5 * 60 * 1000; // OTP valid for 5 minutes
-const expiry = new Date(Date.now() + OTP_EXPIRY_TIME);
-
 export const OTPFn = async (email: string) => {
-
+    const OTP_EXPIRY_TIME = 5 * 60 * 1000; // OTP valid for 5 minutes
+    const expiry = new Date(Date.now() + OTP_EXPIRY_TIME);
     const otp = Math.floor(100000 + Math.random() * 900000);
 
     await sendEmailFn(email, otp)
@@ -62,9 +58,10 @@ export const OTPFn = async (email: string) => {
         }
     })
 
+    console.log(updateOTP, "updateOTP");
+    
+
 
 
     return updateOTP
-
-
 }

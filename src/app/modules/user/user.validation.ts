@@ -13,4 +13,9 @@ const updateValidation = z.object({
     password: z.string().min(8, "Password must be at least 8 characters long").optional()
 })
 
-export const UserValidation = { createValidation, updateValidation }
+const changePasswordValidation = z.object({
+    oldPassword: z.string().min(8, "Password must be at least 8 characters long"),
+    newPassword: z.string().min(8, "Password must be at least 8 characters long")
+})
+
+export const UserValidation = { createValidation, updateValidation, changePasswordValidation }

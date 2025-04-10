@@ -11,9 +11,10 @@ const route = Router()
 
 route.post('/create', validateRequest(UserValidation.createValidation), userController.createUserController)
 
-route.patch('/change-password', userController.passwordChangeController)
+route.put('/reset-password', userController.resetPasswordController)
+route.put('/change-password', auth(Role.USER || Role.ADMIN), validateRequest(UserValidation.changePasswordValidation), userController.changePasswordController)
 
-route.patch("/me", auth(Role.USER || Role.ADMIN), fileUploader.uploadProfileImage, parseBodyMiddleware, userController.updateUserController)
+route.put("/me", auth(Role.USER || Role.ADMIN), fileUploader.uploadProfileImage, parseBodyMiddleware, userController.updateUserController)
 
 
 export const userRoutes = route
