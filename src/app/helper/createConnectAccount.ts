@@ -2,6 +2,7 @@ import { StatusCodes } from "http-status-codes";
 import { stripe } from "../../config/stripe";
 import { prisma } from "../../utils/prisma";
 import ApiError from "../error/ApiErrors";
+import { sendStripeConnectAccLink } from "./sendStripeConnectAccLink";
 
 const createConnectAccount = async (userId: string) => {
     const user = await prisma.user.findUnique({ where: { id: userId } });
@@ -9,14 +10,13 @@ const createConnectAccount = async (userId: string) => {
         throw new ApiError(404, "User not found!");
     }
 
-
-   if (user?.connectAccountId === null && user?.email) {
+    if (user?.connectAccountId === null && user?.email) {
         const stripeAccount = await stripe.accounts.create({
             type: "express",
             country: "US",
             email: user?.email,
             metadata: {
-                userId: id,
+                userId: userId,
             },
             capabilities: {
                 card_payments: { requested: true },
@@ -42,7 +42,7 @@ const createConnectAccount = async (userId: string) => {
 
 
 
-        StripeServices.generateNewAccountLink(updateUser);
+        sendStripeConnectAccLink(updateUser);
 
 
         throw new ApiError(
@@ -55,11 +55,9 @@ const createConnectAccount = async (userId: string) => {
             user?.connectAccountId as string
         );
 
-        console.log(isAccount?.details_submitted, isAccount?.charges_enabled, "isAccount");
-
 
         if (!isAccount.details_submitted || !isAccount.charges_enabled) {
-            await StripeServices.generateNewAccountLink(user);
+            await sendStripeConnectAccLink(user);
             throw new ApiError(
                 StatusCodes.EXPECTATION_FAILED,
                 "We sent you an onboarding URL, Please check your email. If you face any issues, please contact support."
@@ -67,5 +65,5 @@ const createConnectAccount = async (userId: string) => {
         }
     }
 
-  
+
 }
