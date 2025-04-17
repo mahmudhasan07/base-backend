@@ -14,23 +14,25 @@ datasource db {
 }
 
 model User {
-  id        String          @id @default(auto()) @map("_id") @db.ObjectId
-  email     String          @unique
-  name      String?
-  role      Role            @default(USER)
-  status    Status          @default(PENDING)
-  password  String
-  fcmToken  String?
-  image     String?
-  latitude  Float?
-  longitude Float?
-  location  String?
-  isVerified Boolean         @default(false)
-  createdAt DateTime        @default(now())
-  updatedAt DateTime        @updatedAt
-  receiver  Notifications[] @relation("receiverDetails")
-  sender    Notifications[] @relation("senderDetails")
-  Review    Review[]
+  id               String          @id @default(auto()) @map("_id") @db.ObjectId
+  email            String          @unique
+  name             String?
+  role             Role            @default(USER)
+  status           Status          @default(PENDING)
+  password         String
+  fcmToken         String?
+  image            String?
+  latitude         Float?
+  longitude        Float?
+  location         String?
+  customerId       String?
+  connectAccountId String?
+  isVerified       Boolean         @default(false)
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+  receiver         Notifications[] @relation("receiverDetails")
+  sender           Notifications[] @relation("senderDetails")
+  Review           Review[]
 }
 
 model Otp {
@@ -71,7 +73,7 @@ model Booking {
   paymentDetails Payment?    @relation(fields: [paymentId], references: [id], onDelete: Cascade)
   status         OrderStatus @default(PENDING)
   createdAt      DateTime    @default(now())
-  updatedAt      DateTime    @updatedAt 
+  updatedAt      DateTime    @updatedAt
   // Payment        Payment[]
 }
 
@@ -88,14 +90,15 @@ model Review {
 }
 
 model Payment {
-  id        String    @id @default(auto()) @map("_id") @db.ObjectId
-  userId    String    @db.ObjectId
-  amount    Float
-  bookingId String    @db.ObjectId
+  id            String    @id @default(auto()) @map("_id") @db.ObjectId
+  userId        String    @db.ObjectId
+  amount        Float
+  paymentMethod String?
+  bookingId     String    @db.ObjectId
   // bookDetails Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  Booking   Booking[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  Booking       Booking[]
 }
 
 model Notifications {
