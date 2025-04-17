@@ -157,6 +157,39 @@ const deleteCardFromStripe = async (userId: string, last4: string) => {
 }
 
 
+const splitPaymentFromStripe = async (payload: { amount: number, paymentMethodId: string, bookingId: string, userId: string, paymentMethod?: string }, id: string) => {
+
+    const finderUser = await prisma.user.findUnique({ where: { id: payload.userId } });
+
+    if (finderUser?.connectAccountId === null) {
+        throw new ApiError(StatusCodes.NOT_FOUND, "User not found!");
+    }
+    const payment = await stripe.paymentIntents.create({
+        amount: Math.round(payload.amount * 100),
+        currency: payload?.paymentMethod || "usd",
+        payment_method: payload.paymentMethodId,
+        confirmation_method: "automatic",
+        confirm: true,
+        application_fee_amount: Math.round(payload.amount * 0.07),
+        transfer_data: {
+            destination: finderUser?.connectAccountId as string,
+        },
+    });
+
+    if (payment.status !== "succeeded") {
+        throw new ApiError(StatusCodes.BAD_REQUEST, "Payment failed!");
+    }
+
+    await prisma.payment.create({    
+        data: {
+            userId: payload.userId,
+            amount: payload.amount,
+            paymentMethod: payload.paymentMethod,
+            bookingId: payload.bookingId,
+        },
+    });
+}
+
 
 
 

@@ -39,11 +39,7 @@ const createConnectAccount = async (userId: string) => {
                 connectAccountId: stripeAccount.id,
             },
         });
-
-
-
         sendStripeConnectAccLink(updateUser);
-
 
         throw new ApiError(
             StatusCodes.EXPECTATION_FAILED,
