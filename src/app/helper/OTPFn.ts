@@ -58,10 +58,5 @@ export const OTPFn = async (email: string) => {
         }
     })
 
-    console.log(updateOTP, "updateOTP");
-    
-
-
-
     return updateOTP
 }

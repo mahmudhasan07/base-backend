@@ -7,7 +7,7 @@ export const paginationSystem = async(result: any, req: Request) => {
 
     const data = result.slice((page - 1) * limit, page * limit);
     const total = result.length;
-    const totalPage = Math.round(result?.length / limit);
+    const totalPage = Math.ceil(result?.length / limit);
 
     return { data, limit, page, total, totalPage }
 

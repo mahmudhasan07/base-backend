@@ -157,9 +157,9 @@ const deleteCardFromStripe = async (userId: string, last4: string) => {
 }
 
 
-const splitPaymentFromStripe = async (payload: { amount: number, paymentMethodId: string, bookingId: string, userId: string, paymentMethod?: string }, id: string) => {
+const splitPaymentFromStripe = async (payload: { amount: number, paymentMethodId: string, bookingId: string, providerId: string, paymentMethod?: string }, id: string) => {
 
-    const finderUser = await prisma.user.findUnique({ where: { id: payload.userId } });
+    const finderUser = await prisma.user.findUnique({ where: { id: payload.providerId } });
 
     if (finderUser?.connectAccountId === null) {
         throw new ApiError(StatusCodes.NOT_FOUND, "User not found!");
@@ -168,9 +168,9 @@ const splitPaymentFromStripe = async (payload: { amount: number, paymentMethodId
         amount: Math.round(payload.amount * 100),
         currency: payload?.paymentMethod || "usd",
         payment_method: payload.paymentMethodId,
-        confirmation_method: "automatic",
         confirm: true,
-        application_fee_amount: Math.round(payload.amount * 0.07),
+        payment_method_types: ['card'], // 🔥 Important: to avoid auto-redirects or default behavior
+        application_fee_amount: Math.round(payload.amount * 0.05 * 100), // $7 in cents
         transfer_data: {
             destination: finderUser?.connectAccountId as string,
         },
@@ -180,9 +180,9 @@ const splitPaymentFromStripe = async (payload: { amount: number, paymentMethodId
         throw new ApiError(StatusCodes.BAD_REQUEST, "Payment failed!");
     }
 
-    await prisma.payment.create({    
+    await prisma.payment.create({
         data: {
-            userId: payload.userId,
+            userId: id,
             amount: payload.amount,
             paymentMethod: payload.paymentMethod,
             bookingId: payload.bookingId,
@@ -190,7 +190,4 @@ const splitPaymentFromStripe = async (payload: { amount: number, paymentMethodId
     });
 }
 
-
-
-
-export const paymentService = { createIntentInStripe, saveCardInStripe, getSaveCardsFromStripe, deleteCardFromStripe };
+export const paymentService = { createIntentInStripe, saveCardInStripe, getSaveCardsFromStripe, deleteCardFromStripe, splitPaymentFromStripe };

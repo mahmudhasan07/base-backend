@@ -8,7 +8,6 @@ const prisma = new PrismaClient();
 
 const OTPVerify = async (payload: { otp: number; token?: string, email?: string }) => {
 
-    // Verify the token
     let decoded: JwtPayload = {};
     if (payload.token) {
         try {
