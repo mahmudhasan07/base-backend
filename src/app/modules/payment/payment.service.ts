@@ -187,6 +187,15 @@ const splitPaymentFromStripe = async (payload: { amount: number, paymentMethodId
             bookingId: payload.bookingId,
         },
     });
+
+    await prisma.booking.update({
+        where: {
+            id: payload.bookingId,
+        },
+        data: {
+            isPaid: true,
+        },
+    });
 }
 
 export const paymentService = { createIntentInStripe, saveCardInStripe, getSaveCardsFromStripe, deleteCardFromStripe, splitPaymentFromStripe };
