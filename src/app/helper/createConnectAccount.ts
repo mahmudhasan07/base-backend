@@ -4,7 +4,7 @@ import { prisma } from "../../utils/prisma";
 import ApiError from "../error/ApiErrors";
 import { sendStripeConnectAccLink } from "./sendStripeConnectAccLink";
 
-const createConnectAccount = async (userId: string) => {
+export const createConnectAccount = async (userId: string) => {
     const user = await prisma.user.findUnique({ where: { id: userId } });
     if (!user) {
         throw new ApiError(404, "User not found!");
