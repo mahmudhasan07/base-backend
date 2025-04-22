@@ -139,4 +139,25 @@ const updateUserIntoDB = async (id: string, payload: any, image: any) => {
 }
 
 
-export const userServices = { createUserIntoDB, resetPasswordIntoDB, updateUserIntoDB, changePasswordIntoDB }
+const getMyProfile = async (id: string) => {
+
+    const result = await prisma.user.findUnique({
+        where: {
+            id
+        },
+        select: {
+            id: true,
+            name: true,
+            email: true,
+            image: true,
+            role: true,
+            createdAt: true,
+            updatedAt: true
+        }
+    })
+
+    return result
+}
+
+
+export const userServices = { createUserIntoDB, resetPasswordIntoDB, updateUserIntoDB, changePasswordIntoDB, getMyProfile }
