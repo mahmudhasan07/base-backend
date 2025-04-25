@@ -13,10 +13,17 @@ interface payloadType {
 
 const createIntentInStripe = async (payload: payloadType, userId: string) => {
 
+    const findUser = await prisma.user.findUnique({ where: { id: userId } });
+
+    if (findUser?.customerId === null) {
+        throw new ApiError(StatusCodes.NOT_FOUND, "User not found!");
+    }
+
     const payment = await stripe.paymentIntents.create({
         amount: Math.round(payload.amount * 100),
         currency: payload?.paymentMethod || "usd",
         payment_method: payload.paymentMethodId,
+        customer : findUser?.customerId as string,
         confirm: true,
         automatic_payment_methods: {
             enabled: true,
