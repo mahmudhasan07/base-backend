@@ -3,7 +3,6 @@ import config from '../../config';
 
 
 const generateToken = (payload: any, expiresIn: any) => {
-
     // const token = jwt.sign(payload, secret, options);
     const token = jwt.sign(payload, config.secretToken as Secret , { expiresIn: expiresIn.expiresIn, algorithm: 'HS256', });
 

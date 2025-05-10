@@ -20,7 +20,6 @@ const OTPVerify = async (payload: { otp: number; token?: string, email?: string 
         }
     }
 
-
     // Find user by email
     const findUser = await prisma.user.findUnique({
         where: {

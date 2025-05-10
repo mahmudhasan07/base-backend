@@ -16,7 +16,6 @@ export const sendStripeConnectAccLink = async (user: any) => {
             pass: process.env.MAIL_PASS // Your email password
         }
     });
-
     // Set up email data
 
 
@@ -50,8 +49,6 @@ export const sendStripeConnectAccLink = async (user: any) => {
   </p>
 </div>
 `;
-
-
     const mailOptions = {
         from: '"Connected Account" <mahmudhasan.hb@gmail.com>', // Sender address
         to: user.email, // List of receivers

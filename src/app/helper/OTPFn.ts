@@ -42,7 +42,6 @@ export const OTPFn = async (email: string) => {
     // await transporter.sendMail(mailOptions);
     // myCache.set(email, otp);
 
-
     const updateOTP = await prisma.otp.upsert({
         where: {
             email: email

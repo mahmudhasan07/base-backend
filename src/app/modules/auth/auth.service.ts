@@ -37,8 +37,6 @@ const logInFromDB = async (payload: { email: string, password: string, fcmToken?
             }
         })
     }
-
-    // const { password, ...userInfo } = findUser
     const userInfo = {
         email: findUser.email,
         name: findUser.name,
