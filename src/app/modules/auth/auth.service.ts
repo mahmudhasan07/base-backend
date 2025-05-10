@@ -95,5 +95,19 @@ const forgetPassword = async (payload: { email: string }) => {
     return { accessToken: token }
 }
 
-export const authService = { logInFromDB, forgetPassword, verifyOtp }
+const resendOtp = async (payload: { email: string }) => {
+    const findUser = await prisma.user.findUnique({
+        where: {
+
+            email: payload.email
+        }
+    })
+    if (!findUser) {
+        throw new ApiError(StatusCodes.NOT_FOUND, "User not found")
+    }
+    OTPFn(findUser.email)
+}
+
+
+export const authService = { logInFromDB, forgetPassword, verifyOtp, resendOtp }
 
