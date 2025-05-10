@@ -237,4 +237,5 @@ const refundPaymentFromStripe = async (id: string) => {
     return payment;
 }
 
-export const paymentService = { createIntentInStripe, saveCardInStripe, getSaveCardsFromStripe, deleteCardFromStripe, splitPaymentFromStripe };
+
+export const paymentService = { createIntentInStripe, saveCardInStripe, getSaveCardsFromStripe, deleteCardFromStripe, splitPaymentFromStripe, transferAmountFromStripe, refundPaymentFromStripe };
