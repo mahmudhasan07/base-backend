@@ -205,6 +205,20 @@ const splitPaymentFromStripe = async (payload: { amount: number, paymentMethodId
     });
 }
 
+const transferAmountFromStripe = async (payload: { amount: number, connectAccountId: string }) => {
+
+    const transfer = await stripe.transfers.create({
+        amount: Math.round(payload.amount * 0.92 * 100),
+        currency: "usd",
+        destination: payload.connectAccountId, // Connect account ID
+        source_type: "card",
+    });
+
+
+
+
+    return transfer;
+}
 
 const refundPaymentFromStripe = async (id: string) => {
 
