@@ -59,12 +59,11 @@ const createIntentInStripe = async (payload: payloadType, userId: string) => {
     return completePayment;
 };
 
-const saveCardInStripe = async (payload: { paymentMethodId: string; cardholderName: string; }, userId: string) => {
-    const user = await prisma.user.findUnique({ where: { id: userId } });
+const saveCardInStripe = async (payload: { paymentMethodId: string; cardholderName?: string,  userId: string }) => {
+    const user = await prisma.user.findUnique({ where: { id: payload.userId } });
     if (!user) {
         throw new ApiError(404, "User not found!");
     }
-
     const { paymentMethodId, cardholderName } = payload;
     let customerId = user.customerId;
     if (!customerId) {
@@ -77,7 +76,7 @@ const saveCardInStripe = async (payload: { paymentMethodId: string; cardholderNa
         });
         customerId = customer.id;
         await prisma.user.update({
-            where: { id: userId },
+            where: { id: payload.userId },
             data: { customerId },
         });
     }
