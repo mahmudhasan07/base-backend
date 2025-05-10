@@ -8,22 +8,14 @@ import admin from "../../helper/firebaseAdmin";
 // import prisma from "../../utilis/prisma";
 
 // Send notification to a single user
-const sendSingleNotification = async (senderId: string, userId: string, payload: any) => {
+const sendSingleNotification = async (
+  senderId: string,
+  userId: string,
+  payload: any
+) => {
   const user = await prisma.user.findUnique({
     where: { id: userId },
   });
-
-  if (!user?.fcmToken) {
-    throw new ApiError(404, "User not found with FCM token");
-  }
-
-  const message = {
-    notification: {
-      title: payload.title,
-      body: payload.body,
-    },
-    token: user.fcmToken,
-  };
 
   await prisma.notifications.create({
     data: {
@@ -33,6 +25,19 @@ const sendSingleNotification = async (senderId: string, userId: string, payload:
       body: payload.body,
     },
   });
+
+  if (!user?.fcmToken) {
+    // throw new ApiError(404, "User not found with FCM token");
+    return;
+  }
+
+  const message = {
+    notification: {
+      title: payload.title,
+      body: payload.body,
+    },
+    token: user.fcmToken,
+  };
 
   try {
     const response = await admin.messaging().send(message);
@@ -60,9 +65,21 @@ const sendNotifications = async (senderId: string, req: any) => {
     },
   });
 
-  if (!users || users.length === 0) {
-    throw new ApiError(404, "No users found with FCM tokens");
+
+  const notificationData = users.map((user: any) => ({
+    senderId: senderId,
+    receiverId: user.id,
+    title: req.body.title,
+    body: req.body.body,
+  }));
+
+  // Save notifications only if there is data
+  if (notificationData.length > 0) {
+    await prisma.notifications.createMany({
+      data: notificationData,
+    });
   }
+
 
   const fcmTokens = users.map((user) => user.fcmToken);
 
@@ -81,24 +98,6 @@ const sendNotifications = async (senderId: string, req: any) => {
     .map((res: admin.messaging.SendResponse, idx: number) => (res.success ? idx : null))
     .filter((idx: number | null): idx is number => idx !== null);
 
-  // Filter users by success indices
-  const successfulUsers = successIndices.map((idx: number) => users[idx]);
-
-  // Prepare notifications data for only successfully notified users
-  const notificationData = successfulUsers.map((user: any) => ({
-    senderId: senderId,
-    receiverId: user.id,
-    title: req.body.title,
-    body: req.body.body,
-  }));
-
-  // Save notifications only if there is data
-  if (notificationData.length > 0) {
-    await prisma.notifications.createMany({
-      data: notificationData,
-    });
-  }
-
   // Collect failed tokens
   const failedTokens = response.responses
     .map((res: any, idx: any) => (!res.success ? fcmTokens[idx] : null))
@@ -108,14 +107,11 @@ const sendNotifications = async (senderId: string, req: any) => {
     successCount: response.successCount,
     failureCount: response.failureCount,
     failedTokens,
+    successIndices
   };
 };
 
-
-
-const getNotificationsFromDB1 = async (
-  req: any,
-) => {
+const getNotificationsFromDB1 = async (req: any) => {
   // const { page, limit, skip } = paginationHelper.calculatePagination(options);
 
   const todayStart = new Date();
@@ -204,8 +200,6 @@ const getNotificationsFromDB = async (req: any) => {
 
   return notifications;
 };
-
-
 
 const getSingleNotificationFromDB = async (
   req: any,
