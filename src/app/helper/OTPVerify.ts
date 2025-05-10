@@ -49,10 +49,7 @@ const OTPVerify = async (payload: { otp: number; token?: string, email?: string 
 
     // Check if OTP is expired (valid for 5 minutes)
     const currentTime = new Date();
-    const otpExpiryTime = otpRecord.expiry && new Date(otpRecord.expiry) as any;
-    console.log(otpExpiryTime, "otpExpiryTime");
-    console.log(currentTime, "currentTime");
-    
+    const otpExpiryTime = otpRecord.expiry && new Date(otpRecord.expiry) as any
 
     if (currentTime > otpExpiryTime) {
         throw new ApiError(StatusCodes.BAD_REQUEST, "OTP expired");

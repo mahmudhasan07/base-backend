@@ -30,5 +30,11 @@ const forgetPasswordController = catchAsync(async (req: Request, res: Response) 
     sendResponse(res, { statusCode: StatusCodes.OK, success: true, message: "OTP sent to your email", data: result })
 })
 
+const resendOtpController = catchAsync(async (req: Request, res: Response) => {
+    const body = req.body 
+    const result = await authService.resendOtp(body);
+    sendResponse(res, { statusCode: StatusCodes.OK, success: true, message: "OTP sent to your email", data: result })
+})
 
-export const authController = { logInUserController, forgetPasswordController, verifyOtp }
+
+export const authController = { logInUserController, forgetPasswordController, verifyOtp, resendOtpController }
