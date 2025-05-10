@@ -93,8 +93,8 @@ model Payment {
   id            String    @id @default(auto()) @map("_id") @db.ObjectId
   userId        String    @db.ObjectId
   amount        Float
-  paymentMethod String?
-  bookingId     String    @db.ObjectId
+  paymentId String?
+  serviceId     String    @db.ObjectId
   // bookDetails Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt

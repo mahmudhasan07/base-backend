@@ -205,4 +205,23 @@ const splitPaymentFromStripe = async (payload: { amount: number, paymentMethodId
     });
 }
 
+
+const refundPaymentFromStripe = async (id: string) => {
+
+    const findPayment = await prisma.payment.findUnique({
+        where: {
+            serviceId: id
+        }
+    })
+    if (!findPayment) {
+        throw new ApiError(StatusCodes.NOT_FOUND, "Payment not found!");
+    }
+
+    const payment = await stripe.refunds.create({
+        payment_intent: findPayment.paymentId,
+        amount: Math.round(findPayment.amount * 100), // Amount in cents
+    });
+    return payment;
+}
+
 export const paymentService = { createIntentInStripe, saveCardInStripe, getSaveCardsFromStripe, deleteCardFromStripe, splitPaymentFromStripe };
