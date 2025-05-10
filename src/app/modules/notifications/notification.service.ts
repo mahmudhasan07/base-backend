@@ -111,80 +111,6 @@ const sendNotifications = async (senderId: string, req: any) => {
   };
 };
 
-const getNotificationsFromDB1 = async (req: any) => {
-  // const { page, limit, skip } = paginationHelper.calculatePagination(options);
-
-  const todayStart = new Date();
-  todayStart.setHours(0, 0, 0, 0);
-
-  const todayEnd = new Date();
-  todayEnd.setHours(23, 59, 59, 999);
-
-  const todayNotifications = await prisma.notifications.findMany({
-    where: {
-      receiverId: req.user.id,
-      createdAt: {
-        gte: todayStart,
-        lte: todayEnd,
-      },
-    },
-    orderBy: { createdAt: "desc" },
-    select: {
-      id: true,
-      title: true,
-      body: true,
-      senderId: true,
-      createdAt: true,
-      sender: {
-        select: {
-          name: true,
-          image: true,
-        },
-      },
-    },
-  });
-
-  const last7DaysStart = new Date();
-  last7DaysStart.setDate(last7DaysStart.getDate() - 7);
-  last7DaysStart.setHours(0, 0, 0, 0);
-
-  const last7DaysEnd = new Date(todayStart);
-  last7DaysEnd.setMilliseconds(-1);
-
-  const last7DaysNotifications = await prisma.notifications.findMany({
-    where: {
-      receiverId: req.user.id,
-      createdAt: {
-        gte: last7DaysStart,
-        lte: last7DaysEnd,
-      },
-    },
-    orderBy: { createdAt: "desc" },
-    select: {
-      id: true,
-      title: true,
-      body: true,
-      senderId: true,
-      createdAt: true,
-      sender: {
-        select: {
-          name: true,
-          image: true,
-        },
-      },
-    },
-  });
-
-  return {
-    meta: {
-      total: await prisma.notifications.count({
-        where: { receiverId: req.user.id },
-      }),
-    },
-    todayNotifications,
-    last7DaysNotifications,
-  };
-};
 
 const getNotificationsFromDB = async (req: any) => {
   const notifications = await prisma.notifications.findMany({
@@ -201,41 +127,29 @@ const getNotificationsFromDB = async (req: any) => {
   return notifications;
 };
 
-const getSingleNotificationFromDB = async (
-  req: any,
-  notificationId: string
-) => {
-  const notification = await prisma.notifications.findFirst({
+const isReadNotificationFromDB = async(id : string)=>{
+  const notifications = await prisma.notifications.findUnique({
     where: {
-      id: notificationId,
-      receiverId: req.user.id,
+      id: id,
+      read: false,
     },
   });
 
-  const updatedNotification = await prisma.notifications.update({
-    where: { id: notificationId },
+  if (!notifications) {
+    throw new ApiError(404, "No unread notifications found for the user");
+  }
+
+  await prisma.notifications.update({
+    where: { id: id },
     data: { read: true },
-    select: {
-      id: true,
-      title: true,
-      body: true,
-      senderId: true,
-      createdAt: true,
-      sender: {
-        select: {
-          name: true,
-          image: true,
-        },
-      },
-    },
   });
 
-  return updatedNotification;
-};
+  return notifications;
+}
 
 export const notificationServices = {
   sendSingleNotification,
   sendNotifications,
   getNotificationsFromDB,
-  getSingleNotificationFromDB,
+  isReadNotificationFromDB,
 };
