@@ -43,7 +43,7 @@ const createIntentInStripe = async (payload: payloadType, userId: string) => {
             userId: userId,
             amount: payload.amount,
             paymentMethod: payload.paymentMethod,
-            bookingId: payload.bookId,
+            serviceId: payload.bookId,
         },
     });
 
@@ -191,7 +191,7 @@ const splitPaymentFromStripe = async (payload: { amount: number, paymentMethodId
             userId: id,
             amount: payload.amount,
             paymentMethod: payload.paymentMethod,
-            bookingId: payload.bookingId,
+            serviceId: payload.bookingId,
         },
     });
 
@@ -232,7 +232,7 @@ const refundPaymentFromStripe = async (id: string) => {
     }
 
     const payment = await stripe.refunds.create({
-        payment_intent: findPayment.paymentId,
+        payment_intent: findPayment?.paymentId ||"",
         amount: Math.round(findPayment.amount * 100), // Amount in cents
     });
     return payment;

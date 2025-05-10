@@ -91,11 +91,11 @@ model Review {
 
 model Payment {
   id            String    @id @default(auto()) @map("_id") @db.ObjectId
-  userId        String    @db.ObjectId
+  userId        String    @unique @db.ObjectId
   amount        Float
   paymentId     String?
   paymentMethod String?
-  serviceId     String    @db.ObjectId
+  serviceId     String    @unique @db.ObjectId
   // bookDetails Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
