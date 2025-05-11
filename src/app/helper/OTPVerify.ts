@@ -9,7 +9,7 @@ const prisma = new PrismaClient();
 const OTPVerify = async (payload: { otp: number; token?: string, email?: string }) => {
 
     let decoded: JwtPayload = {};
-    if (payload.token) {
+    if (payload.token && !payload.email) {
         try {
             if (!payload.token) {
                 throw new ApiError(StatusCodes.BAD_REQUEST, "Token is required");

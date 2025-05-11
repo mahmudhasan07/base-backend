@@ -3,8 +3,6 @@ import { prisma } from "../../utils/prisma";
 export const sendEmailFn = async (
   email: string,
   otp: number,
-  subject?: string,
-  text?: string
 ) => {
   const findUser = await prisma.user.findUnique({
     where: {

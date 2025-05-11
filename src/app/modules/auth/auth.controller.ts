@@ -14,16 +14,20 @@ const logInUserController = catchAsync(async (req: Request, res: Response) => {
 
 const verifyOtp = catchAsync(async (req: Request, res: Response) => {
     const body = req.body as any
-    const token = req.headers.authorization as string
-
-    const {email} = decode(token) as any || body;
-    const payload = {...body,email}
+    // const token = req.headers.authorization as string
     
-    const result = await authService.verifyOtp(payload);
+    const result = await authService.verifyOtp(body);
     sendResponse(res, { statusCode: StatusCodes.OK, success: true, message: "OTP verified successfully", data: result })
-
 })
 
+// const verifyResetOtpController = catchAsync(async (req: Request, res: Response) => {
+//     const body = req.body as any
+//     const token = req.headers.authorization as string
+//     const payload = {..}
+    
+//     const result = await authService.verifyResetOtp(body);
+//     sendResponse(res, { statusCode: StatusCodes.OK, success: true, message: "OTP verified successfully", data: result })
+// })
 
 const forgetPasswordController = catchAsync(async (req: Request, res: Response) => {
     const result = await authService.forgetPassword(req.body);

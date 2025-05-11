@@ -79,6 +79,12 @@ const verifyOtp = async (payload: { email: string; otp: number }) => {
 
 };
 
+
+const verifyRestOtp = async(payload: {token: string; otp: number }) => {
+    const {accessToken} = await OTPVerify(payload)
+    return accessToken
+}
+
 const forgetPassword = async (payload: { email: string }) => {
     const findUser = await prisma.user.findUnique({
         where: {
@@ -107,5 +113,5 @@ const resendOtp = async (payload: { email: string }) => {
 }
 
 
-export const authService = { logInFromDB, forgetPassword, verifyOtp, resendOtp }
+export const authService = { logInFromDB, forgetPassword, verifyOtp, resendOtp, verifyRestOtp }
 
