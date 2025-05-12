@@ -6,11 +6,9 @@ import { StatusCodes } from "http-status-codes";
 
 
 const createUserController = catchAsync(async (req: Request, res: Response) => {
-
     const result = await userServices.createUserIntoDB(req.body)
     sendResponse(res, { statusCode: StatusCodes.CREATED, message: "Please check your email for verification", data: result, success: true })
 })
-
 
 const resetPasswordController = catchAsync(async (req: Request, res: Response) => {
     const payload = req.body
