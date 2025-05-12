@@ -214,4 +214,5 @@ export const authService = {
   forgetPassword,
   verifyOtp,
   resendOtp,
+  socialLogin
 };

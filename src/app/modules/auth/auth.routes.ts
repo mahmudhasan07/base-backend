@@ -14,5 +14,6 @@ route.post(
 route.post('/forget-password', validateRequest(authValidation.forgotPassword), authController.forgetPasswordController)
 
 route.post('/resend-otp', validateRequest(authValidation.verifyOtp), authController.resendOtpController)
+route.post("/social", authController.socialLoginController);
 
 export const authRoutes = route

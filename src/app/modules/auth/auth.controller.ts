@@ -54,9 +54,19 @@ const resendOtpController = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+
+
+
+const socialLoginController = catchAsync(async (req: Request, res: Response) => {
+  const body = req.body;
+  const result = await authService.socialLogin(body);
+  sendResponse(res, {statusCode : StatusCodes.OK, success : true, message : "User login successfully", data : result});
+})
+
 export const authController = {
   logInUserController,
   forgetPasswordController,
   verifyOtp,
   resendOtpController,
+  socialLoginController
 };
