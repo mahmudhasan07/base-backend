@@ -4,7 +4,7 @@ import { StatusCodes } from "http-status-codes";
 import { ZodError } from "zod";
 import handleZodError from "../../utils/handleZodError";
 import ApiError from "../error/ApiErrors";
-import { handlePrismaValidation } from "../../utils/handlePrismaValidation";
+import handlePrismaValidation from "../../utils/handlePrismaValidation";
 
 // TODO Replace `config.NODE_ENV` with your actual environment configuration
 
@@ -38,11 +38,11 @@ const GlobalErrorHandler = (
       errorSources = [{ type: "ApiError", details: err.message }];
     }
     // handle prisma client validation errors
+     // handle prisma client validation errors
     else if (err instanceof Prisma.PrismaClientValidationError) {
       statusCode = StatusCodes.BAD_REQUEST;
-      const prismaError = handlePrismaValidation(err.message);
-      message = prismaError.message;
-      errorSources = prismaError.details;
+      message = handlePrismaValidation(err.message);
+      errorSources.push("Prisma Client Validation Error");
     }
     // Prisma Client Initialization Error
     else if (err instanceof Prisma.PrismaClientInitializationError) {

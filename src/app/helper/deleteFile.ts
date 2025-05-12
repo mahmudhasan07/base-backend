@@ -1,6 +1,6 @@
 import path from "path";
 import fs from "fs/promises";
-import { DeleteObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { DeleteObjectCommand } from "@aws-sdk/client-s3";
 import { s3 } from "./S3";
 
 const deleteUploadImage = async (imagePath: string): Promise<boolean> => {

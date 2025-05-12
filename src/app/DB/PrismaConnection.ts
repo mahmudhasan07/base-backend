@@ -18,6 +18,7 @@ export const PrismaConnection = async () => {
             data: {
                 email: "admin123@gmail.com",
                 password: newPass,
+                name : "Admin",
                 role: "ADMIN",
                 status: "ACTIVE",
             }
