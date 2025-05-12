@@ -13,10 +13,11 @@ const createPaymentController = catchAsync(async (req: Request, res: Response) =
 })
 
 const saveCardController = catchAsync(async (req: Request, res: Response) => {
-    const payload = req.body as any
+    const body = req.body as any
     const { id: userId } = req.user
+    const payload = {...body, userId}
 
-    const result = await paymentService.saveCardInStripe(payload, userId)
+    const result = await paymentService.saveCardInStripe(payload)
     sendResponse(res, { statusCode: StatusCodes.CREATED, message: "Card saved successfully", data: result, success: true })
 })
 

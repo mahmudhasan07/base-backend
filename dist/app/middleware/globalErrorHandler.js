@@ -6,9 +6,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const client_1 = require("@prisma/client");
 const http_status_codes_1 = require("http-status-codes");
 const zod_1 = require("zod");
-const handleZodError_1 = __importDefault(require("../../utilis/handleZodError"));
+const handleZodError_1 = __importDefault(require("../../utils/handleZodError"));
 const ApiErrors_1 = __importDefault(require("../error/ApiErrors"));
-const handlePrismaValidtion_1 = __importDefault(require("../../utilis/handlePrismaValidtion"));
+const handlePrismaValidation_1 = require("../../utils/handlePrismaValidation");
 // TODO Replace `config.NODE_ENV` with your actual environment configuration
 // TODO
 const config = {
@@ -35,8 +35,9 @@ const GlobalErrorHandler = (err, req, res, next) => {
     // handle prisma client validation errors
     else if (err instanceof client_1.Prisma.PrismaClientValidationError) {
         statusCode = http_status_codes_1.StatusCodes.BAD_REQUEST;
-        message = (0, handlePrismaValidtion_1.default)(err.message);
-        errorSources.push("Prisma Client Validation Error");
+        const prismaError = (0, handlePrismaValidation_1.handlePrismaValidation)(err.message);
+        message = prismaError.message;
+        errorSources = prismaError.details;
     }
     // Prisma Client Initialization Error
     else if (err instanceof client_1.Prisma.PrismaClientInitializationError) {

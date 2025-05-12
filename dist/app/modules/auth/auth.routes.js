@@ -12,4 +12,5 @@ const route = (0, express_1.Router)();
 route.post("/login", (0, validateRequest_1.default)(auth_validation_1.authValidation.loginUser), auth_controller_1.authController.logInUserController);
 route.post("/verify-otp", (0, validateRequest_1.default)(auth_validation_1.authValidation.verifyOtp), auth_controller_1.authController.verifyOtp);
 route.post('/forget-password', (0, validateRequest_1.default)(auth_validation_1.authValidation.forgotPassword), auth_controller_1.authController.forgetPasswordController);
+route.post('/resend-otp', (0, validateRequest_1.default)(auth_validation_1.authValidation.verifyOtp), auth_controller_1.authController.resendOtpController);
 exports.authRoutes = route;

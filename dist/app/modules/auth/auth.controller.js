@@ -23,12 +23,25 @@ const logInUserController = (0, catchAsync_1.default)((req, res) => __awaiter(vo
     (0, sendResponse_1.default)(res, { statusCode: http_status_codes_1.StatusCodes.OK, success: true, message: "User login successfully", data: result });
 }));
 const verifyOtp = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const payload = req.body;
-    const result = yield auth_service_1.authService.verifyOtp(payload);
+    const body = req.body;
+    // const token = req.headers.authorization as string
+    const result = yield auth_service_1.authService.verifyOtp(body);
     (0, sendResponse_1.default)(res, { statusCode: http_status_codes_1.StatusCodes.OK, success: true, message: "OTP verified successfully", data: result });
 }));
+// const verifyResetOtpController = catchAsync(async (req: Request, res: Response) => {
+//     const body = req.body as any
+//     const token = req.headers.authorization as string
+//     const payload = {..}
+//     const result = await authService.verifyResetOtp(body);
+//     sendResponse(res, { statusCode: StatusCodes.OK, success: true, message: "OTP verified successfully", data: result })
+// })
 const forgetPasswordController = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const result = yield auth_service_1.authService.forgetPassword(req.body);
     (0, sendResponse_1.default)(res, { statusCode: http_status_codes_1.StatusCodes.OK, success: true, message: "OTP sent to your email", data: result });
 }));
-exports.authController = { logInUserController, forgetPasswordController, verifyOtp };
+const resendOtpController = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const body = req.body;
+    const result = yield auth_service_1.authService.resendOtp(body);
+    (0, sendResponse_1.default)(res, { statusCode: http_status_codes_1.StatusCodes.OK, success: true, message: "OTP sent to your email", data: result });
+}));
+exports.authController = { logInUserController, forgetPasswordController, verifyOtp, resendOtpController };

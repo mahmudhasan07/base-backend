@@ -18,9 +18,8 @@ const ApiErrors_1 = __importDefault(require("../error/ApiErrors"));
 const http_status_codes_1 = require("http-status-codes");
 const prisma = new client_1.PrismaClient();
 const OTPVerify = (payload) => __awaiter(void 0, void 0, void 0, function* () {
-    // Verify the token
     let decoded = {};
-    if (payload.token) {
+    if (payload.token && !payload.email) {
         try {
             if (!payload.token) {
                 throw new ApiErrors_1.default(http_status_codes_1.StatusCodes.BAD_REQUEST, "Token is required");

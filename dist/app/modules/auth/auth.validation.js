@@ -33,7 +33,7 @@ const verifyOtp = zod_1.default.object({
     })
         .email({
         message: "Invalid email format!",
-    }),
+    }).optional(),
     otp: zod_1.default.number({
         required_error: "OTP is required!",
     }),

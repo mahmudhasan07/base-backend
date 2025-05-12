@@ -19,18 +19,30 @@ const sendResponse_1 = __importDefault(require("../../middleware/sendResponse"))
 const http_status_codes_1 = require("http-status-codes");
 const createUserController = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const result = yield user_service_1.userServices.createUserIntoDB(req.body);
-    (0, sendResponse_1.default)(res, { statusCode: http_status_codes_1.StatusCodes.CREATED, message: "Please check your email address to verify your account", data: result, success: true });
+    (0, sendResponse_1.default)(res, { statusCode: http_status_codes_1.StatusCodes.CREATED, message: "Please check your email for verification", data: result, success: true });
 }));
-// const OTPVerifyController = catchAsync(async (req: Request, res: Response) => {
-//     const payload = req.body
-//     const result = await userServices.verifyOTP(payload)
-//     sendResponse(res, { statusCode: StatusCodes.OK, message: "OTP verified successfully", success: true })
-// })
-const passwordChangeController = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const resetPasswordController = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const payload = req.body;
-    const token = req.headers.authorization;
-    // console.log(token);
-    const result = yield user_service_1.userServices.passwordChangeIntoDB(payload, token);
+    const token = req.headers.authorization || req.body.token;
+    const result = yield user_service_1.userServices.resetPasswordIntoDB(payload, token);
     (0, sendResponse_1.default)(res, { statusCode: http_status_codes_1.StatusCodes.OK, message: "User updated successfully", data: result, success: true });
 }));
-exports.userController = { createUserController, passwordChangeController };
+const changePasswordController = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { id } = req.user;
+    const body = req.body;
+    const result = yield user_service_1.userServices.changePasswordIntoDB(id, body);
+    (0, sendResponse_1.default)(res, { statusCode: http_status_codes_1.StatusCodes.OK, message: "User updated successfully", data: result, success: true });
+}));
+const updateUserController = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { id } = req.user;
+    const body = req === null || req === void 0 ? void 0 : req.body;
+    const image = req === null || req === void 0 ? void 0 : req.file;
+    const result = yield user_service_1.userServices.updateUserIntoDB(id, body, image);
+    (0, sendResponse_1.default)(res, { statusCode: http_status_codes_1.StatusCodes.OK, message: "User updated successfully", data: result, success: true });
+}));
+const getMyProfileController = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { id } = req.user;
+    const result = yield user_service_1.userServices.getMyProfile(id);
+    (0, sendResponse_1.default)(res, { statusCode: http_status_codes_1.StatusCodes.OK, message: "User profile retrieved successfully", data: result, success: true });
+}));
+exports.userController = { createUserController, resetPasswordController, updateUserController, changePasswordController, getMyProfileController };
