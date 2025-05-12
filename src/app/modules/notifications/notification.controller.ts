@@ -67,8 +67,7 @@ const getNotifications = catchAsync(async (req: any, res: any) => {
 const getSingleNotificationById = catchAsync(
   async (req: Request, res: Response) => {
     const notificationId = req.params.notificationId;
-    const notification = await notificationServices.getSingleNotificationFromDB(
-      req,
+    const notification = await notificationServices.isReadNotificationFromDB(
       notificationId
     );
 
