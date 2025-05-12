@@ -8,6 +8,7 @@ import { StatusCodes } from 'http-status-codes';
 import { PrismaConnection } from './app/DB/PrismaConnection';
 import path from 'path';
 import fs from 'fs';
+import morgan from 'morgan';
 
 export const myCache = new NodeCache({ stdTTL: 300 })
 const app = express();
@@ -20,6 +21,7 @@ export const corsOptions = {
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,
 };
+app.use(morgan('dev')); // 'dev' is a predefined format
 app.use(express.json());
 app.use(cors(corsOptions));
 
