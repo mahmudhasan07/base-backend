@@ -1,6 +1,6 @@
 import nodemailer from 'nodemailer';
 import { stripe } from '../../config/stripe';
-export const sendStripeConnectAccLink = async (user: any) => {
+export const StripeConnectAccEmail = async (user: any) => {
 
     const accountLink = await stripe.accountLinks.create({
         account: user.connectAccountId as string,
@@ -16,7 +16,6 @@ export const sendStripeConnectAccLink = async (user: any) => {
             pass: process.env.MAIL_PASS // Your email password
         }
     });
-    // Set up email data
 
 
     const htmlContent = `
