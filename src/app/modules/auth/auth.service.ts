@@ -7,6 +7,7 @@ import { OTPFn } from "../../helper/OTPFn";
 import OTPVerify from "../../helper/OTPVerify";
 import { StatusCodes } from "http-status-codes";
 import { stripe } from "../../../config/stripe";
+import { createStripeCustomerAcc } from "../../helper/createStripeCustomerAcc";
 
 const prisma = new PrismaClient();
 const logInFromDB = async (payload: {
@@ -16,7 +17,7 @@ const logInFromDB = async (payload: {
 }) => {
   const findUser = await prisma.user.findUnique({
     where: {
-      email: payload.email.trim(),
+      email: payload.email,
     },
   });
   if (!findUser) {
@@ -62,12 +63,12 @@ const logInFromDB = async (payload: {
 };
 
 const verifyOtp = async (payload: { email: string; otp: number }) => {
-  const { message } = await OTPVerify(payload);
+  const { message} = await OTPVerify(payload);
 
   if (message) {
     const updateUserInfo = await prisma.user.update({
       where: {
-        email: payload.email,
+        email: payload.email 
       },
       data: {
         status: "ACTIVE",
@@ -84,6 +85,7 @@ const verifyOtp = async (payload: { email: string; otp: number }) => {
         updatedAt: true,
       },
     });
+    await createStripeCustomerAcc(updateUserInfo);
     return updateUserInfo;
   }
 };
@@ -97,12 +99,16 @@ const forgetPassword = async (payload: { email: string }) => {
   if (!findUser) {
     throw new Error("User not found");
   }
-  const token = jwtHelpers.generateToken(
-    { email: findUser.email, id: findUser?.id, role: findUser?.role },
-    { expiresIn: "1hr" }
-  ) as Secret;
+
   OTPFn(findUser.email);
-  return { accessToken: token };
+  return;
+};
+
+const resetOtpVerify = async (payload: { email: string; otp: number }) => {
+  const {accessToken } = await OTPVerify(payload);
+
+  return accessToken;
+
 };
 
 const resendOtp = async (payload: { email: string }) => {
@@ -116,6 +122,8 @@ const resendOtp = async (payload: { email: string }) => {
   }
   OTPFn(findUser.email);
 };
+
+
 
 const socialLogin = async (payload: {
   email: string;
@@ -214,5 +222,6 @@ export const authService = {
   forgetPassword,
   verifyOtp,
   resendOtp,
-  socialLogin
+  socialLogin,
+  resetOtpVerify
 };

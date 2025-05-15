@@ -17,9 +17,7 @@ const logInUserController = catchAsync(async (req: Request, res: Response) => {
 });
 
 const verifyOtp = catchAsync(async (req: Request, res: Response) => {
-  const body = req.body as any;
-  const token = req.headers.authorization as string;
-  const payload = { ...body, token };
+  const payload = req.body as any;
 
   const result = await authService.verifyOtp(payload);
   sendResponse(res, {
@@ -43,6 +41,19 @@ const forgetPasswordController = catchAsync(
   }
 );
 
+
+const resetOtpVerifyController = catchAsync(async (req: Request, res: Response) => {
+  const body = req.body;
+  const result = await authService.resetOtpVerify(body);
+  sendResponse(res, {
+    statusCode: StatusCodes.OK,
+    success: true,
+    message: "OTP verified successfully",
+    data: result,
+  });
+})
+
+
 const resendOtpController = catchAsync(async (req: Request, res: Response) => {
   const body = req.body;
   const result = await authService.resendOtp(body);
@@ -53,8 +64,6 @@ const resendOtpController = catchAsync(async (req: Request, res: Response) => {
     data: result,
   });
 });
-
-
 
 
 const socialLoginController = catchAsync(async (req: Request, res: Response) => {
@@ -68,5 +77,6 @@ export const authController = {
   forgetPasswordController,
   verifyOtp,
   resendOtpController,
-  socialLoginController
+  socialLoginController,
+  resetOtpVerifyController
 };
