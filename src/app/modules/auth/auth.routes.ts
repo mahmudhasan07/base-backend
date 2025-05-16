@@ -21,13 +21,16 @@ route.post(
   authController.forgetPasswordController
 );
 
-route.post("/reset-otp-verify", authController.resetOtpVerifyController);
+route.post("/forget-otp-verify", authController.resetOtpVerifyController);
 
 route.post(
   "/resend-otp",
   validateRequest(authValidation.verifyOtp),
   authController.resendOtpController
 );
+
+
+route.post("/reset-password", authController.resetPasswordController);
 
 route.post("/social", authController.socialLoginController);
 

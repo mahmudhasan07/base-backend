@@ -72,11 +72,19 @@ const socialLoginController = catchAsync(async (req: Request, res: Response) => 
   sendResponse(res, {statusCode : StatusCodes.OK, success : true, message : "User login successfully", data : result});
 })
 
+const resetPasswordController = catchAsync(async (req: Request, res: Response) => {
+  const body = req.body;
+
+  const result = await authService.resetPassword(body);
+  sendResponse(res, {statusCode : StatusCodes.OK, success : true, message : "User login successfully", data : result});
+})
+
 export const authController = {
   logInUserController,
   forgetPasswordController,
   verifyOtp,
   resendOtpController,
   socialLoginController,
-  resetOtpVerifyController
+  resetOtpVerifyController,
+  resetPasswordController
 };

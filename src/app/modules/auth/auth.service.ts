@@ -1,7 +1,7 @@
 import { PrismaClient, Role } from "@prisma/client";
-import { compare } from "bcrypt";
+import { compare, hash } from "bcrypt";
 import { jwtHelpers } from "../../helper/jwtHelper";
-import { Secret } from "jsonwebtoken";
+import { JwtPayload, Secret } from "jsonwebtoken";
 import ApiError from "../../error/ApiErrors";
 import { OTPFn } from "../../helper/OTPFn";
 import OTPVerify from "../../helper/OTPVerify";
@@ -217,11 +217,37 @@ const socialLogin = async (payload: {
   }
 };
 
+const resetPassword = async (payload: { token: string; password: string }) => {
+const {email} = jwtHelpers.tokenDecoder(payload.token) as JwtPayload;
+
+
+
+  const findUser = await prisma.user.findUnique({
+    where: {
+      email: email,
+    },
+  });
+  if (!findUser) {
+    throw new ApiError(StatusCodes.NOT_FOUND, "User not found");
+  }
+  const hashedPassword = await hash(payload.password, 10);
+  const result = await prisma.user.update({
+    where: {
+      email: email,
+    },
+    data: {
+      password: hashedPassword,
+    },
+  });
+  return result;
+};
+
 export const authService = {
   logInFromDB,
   forgetPassword,
   verifyOtp,
   resendOtp,
   socialLogin,
-  resetOtpVerify
+  resetOtpVerify,
+  resetPassword
 };
