@@ -12,6 +12,7 @@ const sendResponse = <T>(
       total: number;
     };
     data?: T | null | undefined;
+    totalPage?: number;
   }
 ) => {
   res.status(jsonData.statusCode).json({
@@ -19,8 +20,8 @@ const sendResponse = <T>(
     message: jsonData.message,
     meta: jsonData.meta || null || undefined,
     data: jsonData.data || null || undefined,
+    totalPage: jsonData.totalPage || null || undefined,
   });
 };
 
 export default sendResponse;
-console.log("");
