@@ -44,7 +44,6 @@ const connectDB = async () => {
     try {
         const conn = await new MongoClient(process.env.DATABASE_URL as string).connect();
         console.log(`MongoDB Connected Successfully`);
-        PrismaConnection()
     } catch (error: any) {
         console.error(`Error: ${error?.message}`);
         process.exit(1); // Exit process with failure
