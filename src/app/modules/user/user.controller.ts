@@ -10,13 +10,6 @@ const createUserController = catchAsync(async (req: Request, res: Response) => {
     sendResponse(res, { statusCode: StatusCodes.CREATED, message: "Please check your email for verification", data: result, success: true })
 })
 
-const resetPasswordController = catchAsync(async (req: Request, res: Response) => {
-    const payload = req.body
-    const token = req.headers.authorization as string || req.body.token as string
-
-    const result = await userServices.resetPasswordIntoDB(payload, token)
-    sendResponse(res, { statusCode: StatusCodes.OK, message: "User updated successfully", data: result, success: true })
-})
 
 const changePasswordController = catchAsync(async (req: Request, res: Response) => {
     const { id } = req.user
@@ -39,4 +32,4 @@ const getMyProfileController = catchAsync(async (req: Request, res: Response) =>
     sendResponse(res, { statusCode: StatusCodes.OK, message: "User profile retrieved successfully", data: result, success: true })
 })
 
-export const userController = { createUserController, resetPasswordController, updateUserController, changePasswordController, getMyProfileController }
+export const userController = { createUserController, updateUserController, changePasswordController, getMyProfileController }

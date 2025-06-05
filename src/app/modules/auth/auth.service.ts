@@ -220,8 +220,6 @@ const socialLogin = async (payload: {
 const resetPassword = async (payload: { token: string; password: string }) => {
 const {email} = jwtHelpers.tokenDecoder(payload.token) as JwtPayload;
 
-
-
   const findUser = await prisma.user.findUnique({
     where: {
       email: email,
