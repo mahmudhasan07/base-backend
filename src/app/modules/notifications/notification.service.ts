@@ -21,8 +21,7 @@ const sendSingleNotification = async (
     data: {
       receiverId: userId,
       senderId: senderId,
-      title: payload.title,
-      body: payload.body,
+      ...payload
     },
   });
 
