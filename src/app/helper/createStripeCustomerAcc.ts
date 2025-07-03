@@ -4,25 +4,31 @@ import ApiError from "../error/ApiErrors";
 import { prisma } from "../../utils/prisma";
 
 export const createStripeCustomerAcc = async (payload: any) => {
-    const stripeCustomer = await stripe.customers.create({
-        email: payload.email.trim(),
-        name: payload.name || undefined,
-        phone: payload.phone || undefined,
-    })
+  const stripeCustomer = await stripe.customers.create({
+    email: payload.email.trim(),
+    name: payload.name || undefined,
+    phone: payload.phone || undefined,
+    metadata: {
+      userId: payload.id,                 // Custom internal user ID
+      role: payload.role || "USER",       // Add any useful info
+    },
+  });
 
-    if (!stripeCustomer.id) {
-        throw new ApiError(
-            StatusCodes.EXPECTATION_FAILED,
-            "Failed to create a Stripe customer"
-        );
-    }
+  if (!stripeCustomer.id) {
+    throw new ApiError(
+      StatusCodes.EXPECTATION_FAILED,
+      "Failed to create a Stripe customer"
+    );
+  }
 
-    await prisma.user.update({
-        where: {
-            id: payload.id
-        },
-        data: {
-            customerId: stripeCustomer.id
-        }
-    })
-}
+  await prisma.user.update({
+    where: {
+      id: payload.id,
+    },
+    data: {
+      customerId: stripeCustomer.id,
+    },
+  });
+
+  return;
+};
