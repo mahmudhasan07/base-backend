@@ -28,10 +28,7 @@ export const webHookService = async (
       case "customer.subscription.updated":
       case "customer.subscription.deleted": {
         const subscription = event.data.object as Stripe.Subscription;
-
-        console.log(subscription, "subscription");
         
-
         if (!subscription.metadata?.userId) {
           res.status(400).send("Missing userId in metadata");
           return;
