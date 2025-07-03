@@ -52,8 +52,11 @@ const sendNotifications = catchAsync(async (req: Request, res: Response) => {
 //   });
 // });
 
-const getNotifications = catchAsync(async (req: any, res: any) => {
-  const notifications = await notificationServices.getNotificationsFromDB(req);
+const getNotifications = catchAsync(async (req: Request, res: Response) => {
+
+  const {id} = req.user
+
+  const notifications = await notificationServices.getNotificationsFromDB(id);
 
   sendResponse(res, {
     statusCode: 200,

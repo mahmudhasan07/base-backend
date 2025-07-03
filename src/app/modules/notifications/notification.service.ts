@@ -111,10 +111,10 @@ const sendNotifications = async (senderId: string, req: any) => {
 };
 
 
-const getNotificationsFromDB = async (req: any) => {
+const getNotificationsFromDB = async (id : string) => {
   const notifications = await prisma.notifications.findMany({
     where: {
-      receiverId: req.user.id,
+      receiverId: id,
     },
     orderBy: { createdAt: "desc" },
   });
