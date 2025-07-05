@@ -354,20 +354,16 @@ const cancelSubscriptionFromStripe = async (payload: { userId: string }) => {
   );
 
   // Update DB with status
-  const updateUserSubscription = await prisma.subscriptionUser.update({
-    where: {
-      userId: payload.userId,
-    },
-    data: {
-      subscriptionStatus: cancelledSubscription.status, // should be "active" but set to cancel later
-    },
-  });
+  // const updateUserSubscription = await prisma.subscriptionUser.update({
+  //   where: {
+  //     userId: payload.userId,
+  //   },
+  //   data: {
+  //     subscriptionStatus: cancelledSubscription.status, // should be "active" but set to cancel later
+  //   },
+  // });
 
-  return {
-    message:
-      "Subscription cancelled. It will remain active until the end of the billing cycle.",
-    subscription: updateUserSubscription,
-  };
+  return cancelledSubscription;
 };
 
 export const paymentService = {
@@ -379,4 +375,5 @@ export const paymentService = {
   transferAmountFromStripe,
   refundPaymentFromStripe,
   subscribeToPlanFromStripe,
+  cancelSubscriptionFromStripe,  
 };
