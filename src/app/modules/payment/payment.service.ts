@@ -311,18 +311,17 @@ const subscribeToPlanFromStripe = async (payload: {
     },
   });
 
-//   await prisma.user.update({
-//     where: {
-//       id: payload.userId,
-//     },
-//     data: {
-//       subscriptionPlan:
-//         findSubscription.name.split(" ")[0] == "Basic" ? "BASIC" : "PRO",
-//     },
-//   });
+  //   await prisma.user.update({
+  //     where: {
+  //       id: payload.userId,
+  //     },
+  //     data: {
+  //       subscriptionPlan:
+  //         findSubscription.name.split(" ")[0] == "Basic" ? "BASIC" : "PRO",
+  //     },
+  //   });
 
   return updateUserPlan;
-
 };
 
 export const paymentService = {
@@ -333,4 +332,5 @@ export const paymentService = {
   splitPaymentFromStripe,
   transferAmountFromStripe,
   refundPaymentFromStripe,
+  subscribeToPlanFromStripe,
 };
