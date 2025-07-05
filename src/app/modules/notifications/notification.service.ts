@@ -77,7 +77,7 @@ const sendNotifications = async (senderId: string, req: any) => {
       data: notificationData,
     });
   }
-
+  
   const fcmTokens = users.map((user) => user.fcmToken);
 
   const message = {
