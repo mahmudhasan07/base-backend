@@ -10,18 +10,18 @@ import admin from "../../helper/firebaseAdmin";
 // Send notification to a single user
 const sendSingleNotification = async (
   senderId: string,
-  userId: string,
+  receiverId: string,
   payload: any
 ) => {
   const user = await prisma.user.findUnique({
-    where: { id: userId },
+    where: { id: receiverId },
   });
 
   await prisma.notifications.create({
     data: {
-      receiverId: userId,
+      receiverId: receiverId,
       senderId: senderId,
-      ...payload
+      ...payload,
     },
   });
 
@@ -64,7 +64,6 @@ const sendNotifications = async (senderId: string, req: any) => {
     },
   });
 
-
   const notificationData = users.map((user: any) => ({
     senderId: senderId,
     receiverId: user.id,
@@ -78,7 +77,6 @@ const sendNotifications = async (senderId: string, req: any) => {
       data: notificationData,
     });
   }
-
 
   const fcmTokens = users.map((user) => user.fcmToken);
 
@@ -94,7 +92,9 @@ const sendNotifications = async (senderId: string, req: any) => {
 
   // Find indices of successful responses
   const successIndices = response.responses
-    .map((res: admin.messaging.SendResponse, idx: number) => (res.success ? idx : null))
+    .map((res: admin.messaging.SendResponse, idx: number) =>
+      res.success ? idx : null
+    )
     .filter((idx: number | null): idx is number => idx !== null);
 
   // Collect failed tokens
@@ -106,12 +106,11 @@ const sendNotifications = async (senderId: string, req: any) => {
     successCount: response.successCount,
     failureCount: response.failureCount,
     failedTokens,
-    successIndices
+    successIndices,
   };
 };
 
-
-const getNotificationsFromDB = async (id : string) => {
+const getNotificationsFromDB = async (id: string) => {
   const notifications = await prisma.notifications.findMany({
     where: {
       receiverId: id,
@@ -126,7 +125,7 @@ const getNotificationsFromDB = async (id : string) => {
   return notifications;
 };
 
-const isReadNotificationFromDB = async(id : string)=>{
+const isReadNotificationFromDB = async (id: string) => {
   const notifications = await prisma.notifications.findUnique({
     where: {
       id: id,
@@ -144,7 +143,7 @@ const isReadNotificationFromDB = async(id : string)=>{
   });
 
   return notifications;
-}
+};
 
 export const notificationServices = {
   sendSingleNotification,
