@@ -1,13 +1,6 @@
-// import admin from "../../../helpers/firebaseAdmin";
-// import { paginationHelper } from "../../../helpers/paginationHelper";
 import { prisma } from "../../../utils/prisma";
 import ApiError from "../../error/ApiErrors";
 import admin from "../../helper/firebaseAdmin";
-// import ApiError from "../../errors/ApiError";
-// import { IPaginationOptions } from "../../interface/pagination.type";
-// import prisma from "../../utilis/prisma";
-
-// Send notification to a single user
 const sendSingleNotification = async (
   senderId: string,
   receiverId: string,
@@ -26,7 +19,6 @@ const sendSingleNotification = async (
   });
 
   if (!user?.fcmToken) {
-    // throw new ApiError(404, "User not found with FCM token");
     return;
   }
 
@@ -77,7 +69,7 @@ const sendNotifications = async (senderId: string, req: any) => {
       data: notificationData,
     });
   }
-  
+
   const fcmTokens = users.map((user) => user.fcmToken);
 
   const message = {
@@ -117,10 +109,6 @@ const getNotificationsFromDB = async (id: string) => {
     },
     orderBy: { createdAt: "desc" },
   });
-
-  if (notifications.length === 0) {
-    throw new ApiError(404, "No notifications found for the user");
-  }
 
   return notifications;
 };

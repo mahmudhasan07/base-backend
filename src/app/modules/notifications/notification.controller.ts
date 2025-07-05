@@ -37,24 +37,8 @@ const sendNotifications = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-// const getNotifications = catchAsync(async (req: Request, res: Response) => {
-//   const options = req.query;
-//   const notifications = await notificationServices.getNotificationsFromDB(
-//     req,
-//     options
-//   );
-
-//   sendResponse(res, {
-//     statusCode: 200,
-//     success: true,
-//     message: "Notifications retrieved successfully",
-//     data: notifications,
-//   });
-// });
-
 const getNotifications = catchAsync(async (req: Request, res: Response) => {
-
-  const {id} = req.user
+  const { id } = req.user;
 
   const notifications = await notificationServices.getNotificationsFromDB(id);
 
@@ -65,7 +49,6 @@ const getNotifications = catchAsync(async (req: Request, res: Response) => {
     data: notifications,
   });
 });
-
 
 const getSingleNotificationById = catchAsync(
   async (req: Request, res: Response) => {

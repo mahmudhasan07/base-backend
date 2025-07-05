@@ -324,6 +324,52 @@ const subscribeToPlanFromStripe = async (payload: {
   return updateUserPlan;
 };
 
+const cancelSubscriptionFromStripe = async (payload: { userId: string }) => {
+  const findUser = await prisma.user.findUnique({
+    where: {
+      id: payload.userId,
+    },
+    include: {
+      SubscriptionUser: true, // assuming relation name is `subscriptionDetails`
+    },
+  });
+
+  if (!findUser) {
+    throw new ApiError(StatusCodes.NOT_FOUND, "User not found!");
+  }
+
+  if (!findUser.SubscriptionUser?.subscriptionId) {
+    throw new ApiError(
+      StatusCodes.BAD_REQUEST,
+      "User does not have an active subscription!"
+    );
+  }
+
+  // Cancel the subscription at Stripe
+  const cancelledSubscription = await stripe.subscriptions.update(
+    findUser.SubscriptionUser?.subscriptionId as string,
+    {
+      cancel_at_period_end: true, // Cancels at end of current billing period
+    }
+  );
+
+  // Update DB with status
+  const updateUserSubscription = await prisma.subscriptionUser.update({
+    where: {
+      userId: payload.userId,
+    },
+    data: {
+      subscriptionStatus: cancelledSubscription.status, // should be "active" but set to cancel later
+    },
+  });
+
+  return {
+    message:
+      "Subscription cancelled. It will remain active until the end of the billing cycle.",
+    subscription: updateUserSubscription,
+  };
+};
+
 export const paymentService = {
   createIntentInStripe,
   saveCardInStripe,
