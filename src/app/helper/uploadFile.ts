@@ -28,20 +28,19 @@ const imageFilter = (req: any, file: any, cb: any) => {
   const allowedMimes = ["image/png", "image/jpeg", "image/jpg"];
 
   if (!allowedMimes.includes(file.mimetype)) {
-    return cb(new Error("Invalid file type. Only PNG, JPG, and JPEG are allowed."), false);
+    return cb(
+      new Error("Invalid file type. Only PNG, JPG, and JPEG are allowed."),
+      false
+    );
   }
   cb(null, true);
 };
 
 // Upload image configurations
-const upload = multer(
-  {
-    storage: s3Storage,
-    fileFilter: imageFilter, // Apply image filter 
-  },
-
-);
-
+const upload = multer({
+  storage: s3Storage,
+  fileFilter: imageFilter, // Apply image filter
+});
 
 export const getImageUrl = async (file: Express.MulterS3.File) => {
   let image = file?.location;
@@ -51,6 +50,15 @@ export const getImageUrl = async (file: Express.MulterS3.File) => {
   return image;
 };
 
+export const getImageUrls = async (files: Express.MulterS3.File[]) => {
+  return files.map((file) => {
+    let image = file?.location;
+    if (!image || !image.startsWith("http")) {
+      image = `https://${process.env.DO_SPACE_BUCKET}.nyc3.digitaloceanspaces.com/${file?.key}`;
+    }
+    return image;
+  });
+};
 
 
 
@@ -65,5 +73,5 @@ export const fileUploader = {
   upload,
   uploadProfileImage,
   uploadFoodImages,
-  serviceImage
+  serviceImage,
 };
