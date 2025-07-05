@@ -19,6 +19,10 @@ const createIntentInStripe = async (payload: payloadType, userId: string) => {
     throw new ApiError(StatusCodes.NOT_FOUND, "User not found!");
   }
 
+  await stripe.paymentMethods.attach(payload.paymentMethodId, {
+    customer: findUser?.customerId || "",
+  });
+
   const payment = await stripe.paymentIntents.create({
     amount: Math.round(payload.amount * 100),
     currency: payload?.paymentMethod || "usd",
@@ -117,28 +121,25 @@ const getSaveCardsFromStripe = async (userId: string) => {
   if (!user) {
     throw new ApiError(404, "User not found!");
   }
-  try {
-    const saveCard = await stripe.paymentMethods.list({
-      customer: user?.customerId || "",
-      type: "card",
-    });
 
-    const cardDetails = saveCard.data.map((card: Stripe.PaymentMethod) => {
-      return {
-        id: card.id,
-        brand: card.card?.brand,
-        last4: card.card?.last4,
-        type: card.card?.checks?.cvc_check === "pass" ? "valid" : "invalid",
-        exp_month: card.card?.exp_month,
-        exp_year: card.card?.exp_year,
-        billing_details: card.billing_details,
-      };
-    });
+  const saveCard = await stripe.paymentMethods.list({
+    customer: user?.customerId || "",
+    type: "card",
+  });
 
-    return cardDetails;
-  } catch {
-    throw new ApiError(StatusCodes.NOT_FOUND, "User not found!");
-  }
+  const cardDetails = saveCard.data.map((card: Stripe.PaymentMethod) => {
+    return {
+      id: card.id,
+      brand: card.card?.brand,
+      last4: card.card?.last4,
+      type: card.card?.checks?.cvc_check === "pass" ? "valid" : "invalid",
+      exp_month: card.card?.exp_month,
+      exp_year: card.card?.exp_year,
+      billing_details: card.billing_details,
+    };
+  });
+
+  return cardDetails;
 };
 
 const deleteCardFromStripe = async (userId: string, last4: string) => {
@@ -375,5 +376,5 @@ export const paymentService = {
   transferAmountFromStripe,
   refundPaymentFromStripe,
   subscribeToPlanFromStripe,
-  cancelSubscriptionFromStripe,  
+  cancelSubscriptionFromStripe,
 };
