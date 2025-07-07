@@ -6,12 +6,12 @@ import catchAsync from "../../../shared/catchAsync";
 import sendResponse from "../../middleware/sendResponse";
 
 const sendNotification = catchAsync(async (req: Request, res: Response) => {
-  const userId = req.params.id;
+  const receiverId = req.params.id;
   const payload = req.body;
   const senderId = req.user.id;
   const notification = await notificationServices.sendSingleNotification(
     senderId,
-    userId,
+    receiverId,
     payload
   );
   sendResponse(res, {
