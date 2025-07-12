@@ -124,7 +124,7 @@ model SubscriptionUser {
   userId             String             @unique @db.ObjectId
   subscriptionPlanId String             @unique @db.ObjectId // E.g., "basic", "premium", etc.
   subscriptionId     String // Stripe subscription ID
-  subscriptionStatus SubscriptionStatus // E.g., "active", "canceled", "incomplete"
+  subscriptionStatus String // E.g., "active", "canceled", "incomplete"
   subscriptionStart  DateTime // When the subscription started
   subscriptionEnd    DateTime // When it ends (for trial or cancel)
   userDetails        User               @relation(fields: [userId], references: [id], onDelete: Cascade)

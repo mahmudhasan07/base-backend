@@ -38,7 +38,7 @@ export const webHookService = async (
         await prisma.subscriptionUser.upsert({
           where: { userId: subscription.metadata.userId },
           update: {
-            subscriptionStatus: "CANCELLED",
+            subscriptionStatus: subscription.status,
             subscriptionStart: new Date(
               subscription.billing_cycle_anchor * 1000
             ),
@@ -50,7 +50,7 @@ export const webHookService = async (
           },
           create: {
             userId: subscription.metadata.userId,
-            subscriptionStatus: "CANCELLED",
+            subscriptionStatus: subscription.status,
             subscriptionStart: new Date(
               subscription.items.data[0].current_period_start * 1000
             ),
