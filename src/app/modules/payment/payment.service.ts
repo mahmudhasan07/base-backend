@@ -355,14 +355,14 @@ const cancelSubscriptionFromStripe = async (payload: { userId: string }) => {
   );
 
   // Update DB with status
-  // const updateUserSubscription = await prisma.subscriptionUser.update({
-  //   where: {
-  //     userId: payload.userId,
-  //   },
-  //   data: {
-  //     subscriptionStatus: cancelledSubscription.status, // should be "active" but set to cancel later
-  //   },
-  // });
+  const updateUserSubscription = await prisma.subscriptionUser.update({
+    where: {
+      userId: payload.userId,
+    },
+    data: {
+      subscriptionStatus: cancelledSubscription.status, // should be "active" but set to cancel later
+    },
+  });
 
   return cancelledSubscription;
 };
