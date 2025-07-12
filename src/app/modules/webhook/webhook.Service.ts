@@ -28,48 +28,48 @@ export const webHookService = async (
       case "customer.subscription.updated":
       case "customer.subscription.deleted": {
         const subscription = event.data.object as Stripe.Subscription;
-        
+
         if (!subscription.metadata?.userId) {
           res.status(400).send("Missing userId in metadata");
           return;
         }
 
         // Upsert subscription user info
-       await prisma.subscriptionUser.upsert({
-    where: { userId: subscription.metadata.userId },
-    update: {
-      subscriptionStatus: subscription.status,
-      subscriptionStart: new Date(
-        subscription.billing_cycle_anchor * 1000
-      ),
-      subscriptionEnd: new Date(
-        subscription.items.data[0].current_period_end * 1000
-      ),
-      subscriptionId: subscription.id,
-      subscriptionPlanId: subscription.items?.data[0]?.plan?.id || "",
-    },
-    create: {
-      userId: subscription.metadata.userId,
-      subscriptionStatus: subscription.status,
-      subscriptionStart: new Date(
-        subscription.items.data[0].current_period_start * 1000
-      ),
-      subscriptionEnd: new Date(
-        subscription.items.data[0].current_period_end * 1000
-      ),
-      subscriptionPlanId: subscription.items?.data[0]?.plan?.id || "",
-      subscriptionId: subscription.id,
-    },
-  });
+        await prisma.subscriptionUser.upsert({
+          where: { userId: subscription.metadata.userId },
+          update: {
+            subscriptionStatus: "CANCELLED",
+            subscriptionStart: new Date(
+              subscription.billing_cycle_anchor * 1000
+            ),
+            subscriptionEnd: new Date(
+              subscription.items.data[0].current_period_end * 1000
+            ),
+            subscriptionId: subscription.id,
+            subscriptionPlanId: subscription.items?.data[0]?.plan?.id || "",
+          },
+          create: {
+            userId: subscription.metadata.userId,
+            subscriptionStatus: "CANCELLED",
+            subscriptionStart: new Date(
+              subscription.items.data[0].current_period_start * 1000
+            ),
+            subscriptionEnd: new Date(
+              subscription.items.data[0].current_period_end * 1000
+            ),
+            subscriptionPlanId: subscription.items?.data[0]?.plan?.id || "",
+            subscriptionId: subscription.id,
+          },
+        });
 
-  // await prisma.payment.create({
-  //   data: {
-  //     serviceId: subscription.metadata.userId,
-  //     paymentId: subscription.latest_invoice?.payment_intent as string,
-  //     amount: subscription.latest_invoice?.amount_due as number,
-  //     status: subscription.latest_invoice?.status as string,
-  //   },
-  // });
+        // await prisma.payment.create({
+        //   data: {
+        //     serviceId: subscription.metadata.userId,
+        //     paymentId: subscription.latest_invoice?.payment_intent as string,
+        //     amount: subscription.latest_invoice?.amount_due as number,
+        //     status: subscription.latest_invoice?.status as string,
+        //   },
+        // });
 
         break;
       }
