@@ -31,7 +31,7 @@ const logInFromDB = async (payload: {
     );
   }
 
-  if (findUser.status === "PENDING") {
+  if (findUser.status === "PENDING" && !findUser.isVerified) {
     OTPFn(findUser.email);
     throw new ApiError(
       401,
@@ -58,17 +58,17 @@ const logInFromDB = async (payload: {
     status: findUser.status,
     fcmToken: findUser.fcmToken,
   };
-  const token = jwtHelpers.generateToken(userInfo, { expiresIn: "24 hr" });
+  const token = jwtHelpers.generateToken(userInfo, { expiresIn: "24h" });
   return { accessToken: token, ...userInfo };
 };
 
 const verifyOtp = async (payload: { email: string; otp: number }) => {
-  const { message} = await OTPVerify(payload);
+  const { message } = await OTPVerify(payload);
 
   if (message) {
     const updateUserInfo = await prisma.user.update({
       where: {
-        email: payload.email 
+        email: payload.email,
       },
       data: {
         status: "ACTIVE",
@@ -105,10 +105,9 @@ const forgetPassword = async (payload: { email: string }) => {
 };
 
 const resetOtpVerify = async (payload: { email: string; otp: number }) => {
-  const {accessToken } = await OTPVerify(payload);
+  const { accessToken } = await OTPVerify(payload);
 
   return accessToken;
-
 };
 
 const resendOtp = async (payload: { email: string }) => {
@@ -122,8 +121,6 @@ const resendOtp = async (payload: { email: string }) => {
   }
   OTPFn(findUser.email);
 };
-
-
 
 const socialLogin = async (payload: {
   email: string;
@@ -148,20 +145,15 @@ const socialLogin = async (payload: {
       updatedAt: true,
     },
   });
+
   if (userData) {
     const accessToken = jwtHelpers.generateToken(
       { id: userData.id, email: userData.email, role: userData.role },
-      { expiresIn: "24 hr" }
+      { expiresIn: "24h" }
     );
     return {
-      id: userData.id,
-      name: userData.name,
-      email: userData.email,
-      role: userData.role,
-      customerId: userData.customerId,
-      image: userData?.image,
-      status: userData.status,
-      accessToken: accessToken,
+      ...userData,
+      accessToken,
     };
   } else {
     const result = await prisma.user.create({
@@ -183,42 +175,21 @@ const socialLogin = async (payload: {
         updatedAt: true,
       },
     });
-    const stripeCustomer = await stripe.customers.create({
-      email: payload.email.trim(),
-      name: payload.name || undefined,
-    });
-
-    if (!stripeCustomer.id) {
-      throw new ApiError(
-        StatusCodes.EXPECTATION_FAILED,
-        "Failed to create a Stripe customer"
-      );
-    }
-
-    await prisma.user.update({
-      where: { id: result.id },
-      data: { customerId: stripeCustomer.id },
-    });
+    await createStripeCustomerAcc(result);
 
     const accessToken = jwtHelpers.generateToken(
       { id: result.id, email: result.email, role: result.role },
-      { expiresIn: "24 hr" }
+      { expiresIn: "24h" }
     );
     return {
-      id: result.id,
-      name: result.name,
-      email: result.email,
-      role: result.role,
-      customerId: result.customerId,
-      image: result?.image,
-      status: result.status,
-      accessToken: accessToken,
+      ...result,
+      accessToken,
     };
   }
 };
 
 const resetPassword = async (payload: { token: string; password: string }) => {
-const {email} = jwtHelpers.tokenDecoder(payload.token) as JwtPayload;
+  const { email } = jwtHelpers.tokenDecoder(payload.token) as JwtPayload;
 
   const findUser = await prisma.user.findUnique({
     where: {
@@ -247,5 +218,5 @@ export const authService = {
   resendOtp,
   socialLogin,
   resetOtpVerify,
-  resetPassword
+  resetPassword,
 };

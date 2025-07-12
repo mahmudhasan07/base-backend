@@ -7,7 +7,8 @@ import { authService } from "./auth.service";
 import { decode } from "jsonwebtoken";
 
 const logInUserController = catchAsync(async (req: Request, res: Response) => {
-  const result = await authService.logInFromDB(req.body);
+  const body = req.body
+  const result = await authService.logInFromDB(body);
   sendResponse(res, {
     statusCode: StatusCodes.OK,
     success: true,
@@ -17,9 +18,9 @@ const logInUserController = catchAsync(async (req: Request, res: Response) => {
 });
 
 const verifyOtp = catchAsync(async (req: Request, res: Response) => {
-  const payload = req.body as any;
+  const body = req.body as any;
 
-  const result = await authService.verifyOtp(payload);
+  const result = await authService.verifyOtp(body);
   sendResponse(res, {
     statusCode: StatusCodes.OK,
     success: true,
@@ -31,7 +32,8 @@ const verifyOtp = catchAsync(async (req: Request, res: Response) => {
 
 const forgetPasswordController = catchAsync(
   async (req: Request, res: Response) => {
-    const result = await authService.forgetPassword(req.body);
+    const body = req.body
+    const result = await authService.forgetPassword(body);
     sendResponse(res, {
       statusCode: StatusCodes.OK,
       success: true,
