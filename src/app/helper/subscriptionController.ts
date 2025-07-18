@@ -16,7 +16,7 @@ export const startSubscriptionExpiryCron = () => {
           lt: today,
         },
         subscriptionStatus: {
-          not: "ACTIVE",
+          not: "active",
         },
       },
       include: {
@@ -43,10 +43,7 @@ export const startSubscriptionExpiryCron = () => {
         where: { id: sub.id },
         data: { subscriptionStatus: "CANCELLED" },
       });
-
-      console.log(`🔒 Blocked user: ${sub.userId}`);
     }
 
-    console.log("✅ Subscription check complete.");
   });
 };
