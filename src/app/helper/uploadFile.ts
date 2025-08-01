@@ -4,8 +4,8 @@ import multerS3 from "multer-s3";
 
 // Configure DigitalOcean Spaces
 const s3 = new S3Client({
-  endpoint: process.env.DO_SPACE_ENDPOINT,
-  region: "nyc3", // Replace with your region
+  endpoint: `https://${process.env.DO_SPACE_ENDPOINT}`,
+  region: process.env.DO_SPACE_REGION, // Replace with your region
   credentials: {
     accessKeyId: process.env.DO_SPACE_ACCESS_KEY || "", // Store in .env for security
     secretAccessKey: process.env.DO_SPACE_SECRET_KEY || "", // Store in .env for security
@@ -16,7 +16,7 @@ const s3 = new S3Client({
 const s3Storage = multerS3({
   s3: s3,
   bucket: process.env.DO_SPACE_BUCKET || "", // Replace with your bucket name
-  acl: "public-read", // Ensure files are publicly accessible
+  // acl: "public-read", // Ensure files are publicly accessible
   contentType: multerS3.AUTO_CONTENT_TYPE, // Automatically detect content type
   key: (req, file, cb) => {
     const uniqueName = `${Date.now()}-${file.originalname}`;
@@ -45,7 +45,7 @@ const upload = multer({
 export const getImageUrl = async (file: Express.MulterS3.File) => {
   let image = file?.location;
   if (!image || !image.startsWith("http")) {
-    image = `https://${process.env.DO_SPACE_BUCKET}.nyc3.digitaloceanspaces.com/${file?.key}`;
+    image = `https://${process.env.DO_SPACE_BUCKET}.${process.env.DO_SPACE_ENDPOINT}/${file?.key}`;
   }
   return image;
 };
@@ -54,7 +54,7 @@ export const getImageUrls = async (files: Express.MulterS3.File[]) => {
   return files.map((file) => {
     let image = file?.location;
     if (!image || !image.startsWith("http")) {
-      image = `https://${process.env.DO_SPACE_BUCKET}.nyc3.digitaloceanspaces.com/${file?.key}`;
+      image = `https://${process.env.DO_SPACE_BUCKET}.${process.env.DO_SPACE_ENDPOINT}/${file?.key}`;
     }
     return image;
   });
