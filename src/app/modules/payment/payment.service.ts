@@ -4,6 +4,7 @@ import ApiError from "../../error/ApiErrors";
 import Stripe from "stripe";
 import { stripe } from "../../../config/stripe";
 import { createStripeCustomerAcc } from "../../helper/createStripeCustomerAcc";
+import { createStripeConnectAccount } from "../../helper/createStripeConnectAccount";
 
 interface payloadType {
   amount: number;
@@ -174,13 +175,45 @@ const splitPaymentFromStripe = async (
   },
   id: string
 ) => {
-  const finderUser = await prisma.user.findUnique({
+  const findUser = await prisma.user.findUnique({
+    where: { id: id },
+  });
+
+  if (!findUser) {
+    throw new ApiError(StatusCodes.NOT_FOUND, "User not found!");
+  }
+
+  if (findUser?.customerId === null) {
+    await createStripeCustomerAcc(findUser);
+  }
+
+  const findProvider = await prisma.user.findUnique({
     where: { id: payload.providerId },
   });
 
-  if (finderUser?.connectAccountId === null) {
-    throw new ApiError(StatusCodes.NOT_FOUND, "User not found!");
+  if (!findProvider) {
+    throw new ApiError(StatusCodes.NOT_FOUND, "Provider not found!");
   }
+
+  if (findProvider?.connectAccountId === null) {
+    await createStripeConnectAccount(findProvider.id);
+  }
+
+  const account = await stripe.accounts.retrieve(findUser.customerId as string);
+
+  if (
+    !account.payouts_enabled &&
+    !account.charges_enabled &&
+    !account.details_submitted &&
+    !account.charges_enabled
+  ) {
+    await createStripeConnectAccount(findProvider.id);
+  }
+
+  await stripe.paymentMethods.attach(payload.paymentMethodId, {
+    customer: findUser.customerId as string,
+  });
+
   const payment = await stripe.paymentIntents.create({
     amount: Math.round(payload.amount * 100),
     currency: payload?.paymentMethod || "usd",
@@ -189,7 +222,7 @@ const splitPaymentFromStripe = async (
     payment_method_types: ["card"], // 🔥 Important: to avoid auto-redirects or default behavior
     application_fee_amount: Math.round(payload.amount * 0.05 * 100), // $7 in cents
     transfer_data: {
-      destination: finderUser?.connectAccountId as string,
+      destination: findProvider?.connectAccountId as string,
     },
   });
 
