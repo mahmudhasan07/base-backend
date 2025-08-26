@@ -26,7 +26,7 @@ const logInFromDB = async (payload: {
   const comparePassword = await compare(payload.password, findUser.password);
   if (!comparePassword) {
     throw new ApiError(
-      StatusCodes.NON_AUTHORITATIVE_INFORMATION,
+      StatusCodes.UNAUTHORIZED,
       "Invalid password"
     );
   }
