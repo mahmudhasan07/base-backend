@@ -20,23 +20,23 @@ const createIntentInStripe = async (payload: payloadType, userId: string) => {
     throw new ApiError(StatusCodes.NOT_FOUND, "User not found!");
   }
 
-  await stripe.paymentMethods.attach(payload.paymentMethodId, {
-    customer: findUser?.customerId || "",
-  });
 
   const payment = await stripe.paymentIntents.create({
     amount: Math.round(payload.amount * 100),
-    currency: payload?.paymentMethod || "usd",
+    currency: "usd",
     payment_method: payload.paymentMethodId,
     customer: findUser?.customerId as string,
     confirm: true,
+    metadata: {
+      userId,
+      bookId: payload.bookId,
+    },
     automatic_payment_methods: {
       enabled: true,
       allow_redirects: "never",
     },
   });
 
-  console.log(payment);
 
   if (payment.status !== "succeeded") {
     throw new ApiError(StatusCodes.BAD_REQUEST, "Payment failed");
@@ -205,24 +205,26 @@ const splitPaymentFromStripe = async (
     !account.payouts_enabled &&
     !account.charges_enabled &&
     !account.details_submitted &&
-    !account.charges_enabled
+    !account.capabilities?.transfers
   ) {
     await createStripeConnectAccount(findProvider.id);
   }
 
-  await stripe.paymentMethods.attach(payload.paymentMethodId, {
-    customer: findUser.customerId as string,
-  });
 
   const payment = await stripe.paymentIntents.create({
     amount: Math.round(payload.amount * 100),
-    currency: payload?.paymentMethod || "usd",
+    currency: "usd",
     payment_method: payload.paymentMethodId,
     confirm: true,
     payment_method_types: ["card"], // 🔥 Important: to avoid auto-redirects or default behavior
-    application_fee_amount: Math.round(payload.amount * 0.05 * 100), // $7 in cents
+    application_fee_amount: Math.round(payload.amount * 0.05 * 100), 
     transfer_data: {
       destination: findProvider?.connectAccountId as string,
+    },
+    metadata: {
+      userId: id,
+      providerId: payload.providerId,
+      bookingId: payload.bookingId,
     },
   });
 
@@ -230,23 +232,23 @@ const splitPaymentFromStripe = async (
     throw new ApiError(StatusCodes.BAD_REQUEST, "Payment failed!");
   }
 
-  await prisma.payment.create({
-    data: {
-      userId: id,
-      amount: payload.amount,
-      paymentMethod: payload.paymentMethod,
-      serviceId: payload.bookingId,
-    },
-  });
+  await prisma.$transaction([
+    prisma.payment.create({
+      data: {
+        userId : id,
+        amount: payload.amount,
+        paymentMethod: payload.paymentMethod,
+        serviceId: payload.bookingId,
+      },
+    }),
+    prisma.booking.update({
+      where: { id: payload.bookingId },
+      data: { isPaid: true },
+    }),
+  ]);
 
-  await prisma.booking.update({
-    where: {
-      id: payload.bookingId,
-    },
-    data: {
-      isPaid: true,
-    },
-  });
+
+
 };
 
 const transferAmountFromStripe = async (payload: {

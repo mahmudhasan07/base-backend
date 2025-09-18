@@ -34,7 +34,7 @@ const logInFromDB = async (payload: {
   if (findUser.status === "PENDING" && !findUser.isVerified) {
     OTPFn(findUser.email);
     throw new ApiError(
-      401,
+      StatusCodes.UNAUTHORIZED,
       "Please check your email address to verify your account"
     );
   }
@@ -93,7 +93,7 @@ const verifyOtp = async (payload: { email: string; otp: number }) => {
 const forgetPassword = async (payload: { email: string }) => {
   const findUser = await prisma.user.findUnique({
     where: {
-      email: payload.email,
+      email: payload.email.trim(),
     },
   });
   if (!findUser) {

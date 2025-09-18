@@ -16,7 +16,7 @@ const createUserIntoDB = async (payload: User) => {
     },
   });
   if (findUser && findUser?.isVerified) {
-    throw new ApiError(StatusCodes.NOT_FOUND, "User already exists");
+    throw new ApiError(StatusCodes.UNAUTHORIZED, "User already exists");
   }
   if (findUser && !findUser?.isVerified) {
     await OTPFn(payload.email);
@@ -56,7 +56,7 @@ const changePasswordIntoDB = async (id: string, payload: any) => {
   const comparePassword = await compare(payload.oldPassword, findUser.password);
   if (!comparePassword) {
     throw new ApiError(
-      StatusCodes.NON_AUTHORITATIVE_INFORMATION,
+      StatusCodes.UNAUTHORIZED,
       "Invalid password"
     );
   }
@@ -74,7 +74,7 @@ const changePasswordIntoDB = async (id: string, payload: any) => {
 };
 
 const updateUserIntoDB = async (id: string, payload: any, image: any) => {
-  const userImage = await getImageUrl(image);
+  const userImage = image && await getImageUrl(image);
 
   const findUser = await prisma.user.findUnique({
     where: {
