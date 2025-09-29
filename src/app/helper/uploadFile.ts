@@ -16,7 +16,7 @@ const s3 = new S3Client({
 const s3Storage = multerS3({
   s3: s3,
   bucket: process.env.DO_SPACE_BUCKET || "", // Replace with your bucket name
-  // acl: "public-read", // Ensure files are publicly accessible
+  acl: "public-read", // Ensure files are publicly accessible
   contentType: multerS3.AUTO_CONTENT_TYPE, // Automatically detect content type
   key: (req, file, cb) => {
     const uniqueName = `${Date.now()}-${file.originalname}`;

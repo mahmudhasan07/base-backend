@@ -49,6 +49,9 @@ const changePasswordIntoDB = async (id: string, payload: any) => {
     where: {
       id,
     },
+    select: {
+      password: true,
+    }
   });
   if (!findUser) {
     throw new ApiError(StatusCodes.NOT_FOUND, "User not found");
@@ -121,6 +124,10 @@ const getMyProfile = async (id: string) => {
       updatedAt: true,
     },
   });
+
+  if (!result) {
+    throw new ApiError(StatusCodes.NOT_FOUND, "User not found");
+  }
 
   return result;
 };

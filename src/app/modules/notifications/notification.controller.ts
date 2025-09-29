@@ -24,9 +24,10 @@ const sendNotification = catchAsync(async (req: Request, res: Response) => {
 
 const sendNotifications = catchAsync(async (req: Request, res: Response) => {
   const userId = req.user.id;
+  const body = req.body;
   const notifications = await notificationServices.sendNotifications(
     userId,
-    req
+    body
   );
 
   sendResponse(res, {

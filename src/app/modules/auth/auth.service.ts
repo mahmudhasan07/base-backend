@@ -8,6 +8,7 @@ import OTPVerify from "../../helper/OTPVerify";
 import { StatusCodes } from "http-status-codes";
 import { stripe } from "../../../config/stripe";
 import { createStripeCustomerAcc } from "../../helper/createStripeCustomerAcc";
+import { STATUS_CODES } from "http";
 
 const prisma = new PrismaClient();
 const logInFromDB = async (payload: {
@@ -97,7 +98,7 @@ const forgetPassword = async (payload: { email: string }) => {
     },
   });
   if (!findUser) {
-    throw new Error("User not found");
+    throw new ApiError(StatusCodes.NOT_FOUND,"User not found");
   }
 
   OTPFn(findUser.email);
@@ -189,7 +190,11 @@ const socialLogin = async (payload: {
 };
 
 const resetPassword = async (payload: { token: string; password: string }) => {
-  const { email } = jwtHelpers.tokenDecoder(payload.token) as JwtPayload;
+  const {email, exp } = jwtHelpers.tokenDecoder(payload.token) as JwtPayload;
+
+  if (exp && exp < Date.now() / 1000) {
+    throw new ApiError(StatusCodes.UNAUTHORIZED, "Token expired");
+  }
 
   const findUser = await prisma.user.findUnique({
     where: {
@@ -207,6 +212,15 @@ const resetPassword = async (payload: { token: string; password: string }) => {
     data: {
       password: hashedPassword,
     },
+    select : {
+      id: true,
+      name: true,
+      email: true,
+      role: true,
+      status: true,
+      createdAt: true,
+      updatedAt: true,
+    }
   });
   return result;
 };

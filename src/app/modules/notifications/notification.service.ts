@@ -1,3 +1,4 @@
+import { StatusCodes } from "http-status-codes";
 import { prisma } from "../../../utils/prisma";
 import ApiError from "../../error/ApiErrors";
 import admin from "../../helper/firebaseAdmin";
@@ -6,9 +7,22 @@ const sendSingleNotification = async (
   receiverId: string,
   payload: any
 ) => {
-  const user = await prisma.user.findUnique({
+
+  const findSender = await prisma.user.findUnique({
+    where: { id: senderId },
+  });
+
+  if (!findSender) {
+    throw new ApiError(StatusCodes.NOT_FOUND, "Sender not found");
+  }
+
+  const findReceiver = await prisma.user.findUnique({
     where: { id: receiverId },
   });
+
+  if (!findReceiver) {
+    throw new ApiError(StatusCodes.NOT_FOUND, "Receiver not found");
+  }
 
   await prisma.notifications.create({
     data: {
@@ -18,7 +32,7 @@ const sendSingleNotification = async (
     },
   });
 
-  if (!user?.fcmToken) {
+  if (!findReceiver?.fcmToken) {
     return;
   }
 
@@ -27,7 +41,7 @@ const sendSingleNotification = async (
       title: payload.title,
       body: payload.body,
     },
-    token: user.fcmToken,
+    token: findReceiver.fcmToken,
   };
 
   try {
@@ -45,7 +59,7 @@ const sendSingleNotification = async (
 };
 
 // Send notifications to all users with valid FCM tokens
-const sendNotifications = async (senderId: string, req: any) => {
+const sendNotifications = async (senderId: string, body: { title: string; body: string }) => {
   const users = await prisma.user.findMany({
     where: {
       fcmToken: {},
@@ -59,8 +73,8 @@ const sendNotifications = async (senderId: string, req: any) => {
   const notificationData = users.map((user: any) => ({
     senderId: senderId,
     receiverId: user.id,
-    title: req.body.title,
-    body: req.body.body,
+    title: body.title,
+    body: body.body,
   }));
 
   // Save notifications only if there is data
@@ -74,8 +88,8 @@ const sendNotifications = async (senderId: string, req: any) => {
 
   const message = {
     notification: {
-      title: req.body.title,
-      body: req.body.body,
+      title: body.title,
+      body: body.body,
     },
     tokens: fcmTokens,
   };
@@ -109,6 +123,16 @@ const getNotificationsFromDB = async (id: string) => {
     },
     orderBy: { createdAt: "desc" },
   });
+
+  const readAllMessages = await prisma.notifications.updateMany({
+    where: {
+      receiverId: id,
+    },
+    data: {
+      read: true,
+    },
+  })
+
 
   return notifications;
 };
