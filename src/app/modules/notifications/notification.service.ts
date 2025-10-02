@@ -124,7 +124,7 @@ const getNotificationsFromDB = async (id: string) => {
     orderBy: { createdAt: "desc" },
   });
 
-  const readAllMessages = await prisma.notifications.updateMany({
+   await prisma.notifications.updateMany({
     where: {
       receiverId: id,
     },

@@ -60,6 +60,5 @@ export const createStripeConnectAccount = async (userId: string) => {
             );
         }
     }
-
-
+    
 }
