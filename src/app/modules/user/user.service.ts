@@ -45,6 +45,14 @@ const createUserIntoDB = async (payload: User) => {
 };
 
 const changePasswordIntoDB = async (id: string, payload: any) => {
+
+  if (payload.oldPassword == payload.newPassword) {
+    throw new ApiError(
+      StatusCodes.BAD_REQUEST,
+      "New password should be different from old password"
+    );
+  }
+
   const findUser = await prisma.user.findUnique({
     where: {
       id,
@@ -80,7 +88,7 @@ const updateUserIntoDB = async (id: string, payload: any, image: any) => {
   const userImage = image && await getImageUrl(image);
 
   console.log(userImage, "userImage");
-  
+
 
   const findUser = await prisma.user.findUnique({
     where: {

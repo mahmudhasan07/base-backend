@@ -32,15 +32,15 @@ app.get("/", (req, res) => {
   });
 });
 
-const uploadPath = path.join(__dirname, "..", "uploads");
+// const uploadPath = path.join(__dirname, "..", "uploads");
 
-// Ensure uploads folder exists
-if (!fs.existsSync(uploadPath)) {
-  fs.mkdirSync(uploadPath, { recursive: true });
-  console.log("Uploads folder created successfully!");
-}
+// // Ensure uploads folder exists
+// if (!fs.existsSync(uploadPath)) {
+//   fs.mkdirSync(uploadPath, { recursive: true });
+//   console.log("Uploads folder created successfully!");
+// }
 
-app.use("/uploads", express.static(uploadPath));
+// app.use("/uploads", express.static(uploadPath));
 
 const connectDB = async () => {
   try {
