@@ -9,7 +9,15 @@ const loginUser = z.object({
         }),
     password: z.string({
         required_error: "Password is required!",
-    }),
+    })
+        .min(8, {
+            message: "Password must be at least 6 characters long!",
+        })
+        .regex(/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*#?&]{8,}$/, {
+            message:
+                "Password must contain at least one letter with uppercase, one special character and one number!",
+        }),
+
 });
 
 const forgotPassword = z.object({
@@ -35,10 +43,30 @@ const verifyOtp = z.object({
     }),
 });
 
+const resetPassword = z.object({
+    token: z
+        .string({
+            required_error: "token is required!",
+        }),
+    password: z.string({
+        required_error: "Password is required!",
+    })
+        .min(8, {
+            message: "Password must be at least 6 characters long!",
+        })
+        .regex(/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*#?&]{8,}$/, {
+            message:
+                "Password must contain at least one letter with uppercase, one special character and one number!",
+        }),
+});
+
 const changePassword = z.object({
+    oldPassword: z.string({
+        required_error: "Old password is required!",
+    }),
     newPassword: z.string({
         required_error: "New password is required!",
     }),
 });
 
-export const authValidation = { loginUser, forgotPassword, verifyOtp, changePassword };
+export const authValidation = { loginUser, forgotPassword, verifyOtp, changePassword, resetPassword };

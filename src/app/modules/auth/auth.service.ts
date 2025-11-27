@@ -18,7 +18,7 @@ const logInFromDB = async (payload: {
 }) => {
   const findUser = await prisma.user.findUnique({
     where: {
-      email: payload.email,
+      email: payload.email.trim(),
     },
   });
   if (!findUser) {
@@ -64,7 +64,7 @@ const logInFromDB = async (payload: {
 };
 
 const verifyOtp = async (payload: { email: string; otp: number }) => {
-  const { message } = await OTPVerify({ ...payload, time: "24h" });
+  const { message } = await OTPVerify({ ...payload, time: "1h" });
 
   if (message) {
     const updateUserInfo = await prisma.user.update({
@@ -98,7 +98,7 @@ const forgetPassword = async (payload: { email: string }) => {
     },
   });
   if (!findUser) {
-    throw new ApiError(StatusCodes.NOT_FOUND,"User not found");
+    throw new ApiError(StatusCodes.NOT_FOUND, "User not found");
   }
 
   OTPFn(findUser.email);
@@ -114,7 +114,7 @@ const resetOtpVerify = async (payload: { email: string; otp: number }) => {
 const resendOtp = async (payload: { email: string }) => {
   const findUser = await prisma.user.findUnique({
     where: {
-      email: payload.email,
+      email: payload.email.trim(),
     },
   });
   if (!findUser) {
@@ -190,7 +190,7 @@ const socialLogin = async (payload: {
 };
 
 const resetPassword = async (payload: { token: string; password: string }) => {
-  const {email, exp } = jwtHelpers.tokenDecoder(payload.token) as JwtPayload;
+  const { email, exp } = jwtHelpers.tokenDecoder(payload.token) as JwtPayload;
 
   if (exp && exp < Date.now() / 1000) {
     throw new ApiError(StatusCodes.UNAUTHORIZED, "Token expired");
@@ -204,6 +204,15 @@ const resetPassword = async (payload: { token: string; password: string }) => {
   if (!findUser) {
     throw new ApiError(StatusCodes.NOT_FOUND, "User not found");
   }
+
+  const comparePassword = await compare(payload.password, findUser.password);
+  if (comparePassword) {
+    throw new ApiError(
+      StatusCodes.BAD_REQUEST,
+      "New password should be different from old password"
+    );
+  }
+
   const hashedPassword = await hash(payload.password, 10);
   const result = await prisma.user.update({
     where: {
@@ -212,7 +221,7 @@ const resetPassword = async (payload: { token: string; password: string }) => {
     data: {
       password: hashedPassword,
     },
-    select : {
+    select: {
       id: true,
       name: true,
       email: true,

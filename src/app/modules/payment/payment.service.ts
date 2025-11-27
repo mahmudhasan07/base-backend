@@ -360,6 +360,9 @@ const subscribeToPlanFromStripe = async (payload: {
   return updateUserPlan;
 };
 
+
+const subscriptionPlanFormAppleOrGoogle = async (payload: { userId: string }) => {};
+
 const cancelSubscriptionFromStripe = async (payload: { userId: string }) => {
   const findUser = await prisma.user.findUnique({
     where: {
