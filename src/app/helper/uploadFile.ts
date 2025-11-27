@@ -1,15 +1,18 @@
 import multer from "multer";
 import { S3Client } from "@aws-sdk/client-s3";
 import multerS3 from "multer-s3";
+import { log } from "console";
 
 // Configure DigitalOcean Spaces
 const s3 = new S3Client({
   endpoint: `https://${process.env.DO_SPACE_ENDPOINT}`,
   region: process.env.DO_SPACE_REGION, // Replace with your region
+  forcePathStyle: true,
   credentials: {
     accessKeyId: process.env.DO_SPACE_ACCESS_KEY || "", // Store in .env for security
     secretAccessKey: process.env.DO_SPACE_SECRET_KEY || "", // Store in .env for security
   },
+
 });
 
 // Create multer storage for DigitalOcean Spaces
@@ -19,8 +22,9 @@ const s3Storage = multerS3({
   acl: "public-read", // Ensure files are publicly accessible
   contentType: multerS3.AUTO_CONTENT_TYPE, // Automatically detect content type
   key: (req, file, cb) => {
+    const folder = "Vornox"
     const uniqueName = `${Date.now()}-${file.originalname}`;
-    cb(null, uniqueName); // File name in Spaces
+    cb(null, `${folder}/${uniqueName}`); // File name in Spaces
   },
 });
 

@@ -79,6 +79,9 @@ const changePasswordIntoDB = async (id: string, payload: any) => {
 const updateUserIntoDB = async (id: string, payload: any, image: any) => {
   const userImage = image && await getImageUrl(image);
 
+  console.log(userImage, "userImage");
+  
+
   const findUser = await prisma.user.findUnique({
     where: {
       id,
