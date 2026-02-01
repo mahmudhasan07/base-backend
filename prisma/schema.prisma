@@ -34,7 +34,6 @@ model User {
   receiver         Notifications[]   @relation("receiverDetails")
   sender           Notifications[]   @relation("senderDetails")
   Review           Review[]
-  SubscriptionUser SubscriptionUser?
 }
 
 model Otp {
@@ -102,35 +101,6 @@ model Payment {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   Booking       Booking[]
-}
-
-model Subscription {
-  id               String            @id @default(auto()) @map("_id") @db.ObjectId
-  name             String
-  stripeProductId  String
-  stripePriceId    String
-  price            Float
-  description      String
-  currency         String
-  interval         String?
-  status           Status            @default(ACTIVE)
-  createdAt        DateTime          @default(now())
-  updatedAt        DateTime          @updatedAt
-  SubscriptionUser SubscriptionUser?
-}
-
-model SubscriptionUser {
-  id                 String       @id @default(auto()) @map("_id") @db.ObjectId
-  userId             String       @unique @db.ObjectId
-  subscriptionPlanId String       @unique @db.ObjectId // E.g., "basic", "premium", etc.
-  subscriptionId     String // Stripe subscription ID
-  subscriptionStatus String // E.g., "active", "canceled", "incomplete"
-  subscriptionStart  DateTime // When the subscription started
-  subscriptionEnd    DateTime // When it ends (for trial or cancel)
-  userDetails        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  subscriptionPlan   Subscription @relation(fields: [subscriptionPlanId], references: [id], onDelete: Cascade)
-  createdAt          DateTime     @default(now())
-  updatedAt          DateTime     @updatedAt
 }
 
 model SubscriptionFormGoogleApple {
