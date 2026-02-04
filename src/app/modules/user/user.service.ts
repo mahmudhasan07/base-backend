@@ -80,6 +80,15 @@ const changePasswordIntoDB = async (id: string, payload: any) => {
     data: {
       password: hashedPassword,
     },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      image: true,
+      role: true,
+      createdAt: true,
+      updatedAt: true,
+    },
   });
   return result;
 };

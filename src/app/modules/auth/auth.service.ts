@@ -6,9 +6,7 @@ import ApiError from "../../error/ApiErrors";
 import { OTPFn } from "../../helper/OTPFn";
 import OTPVerify from "../../helper/OTPVerify";
 import { StatusCodes } from "http-status-codes";
-import { stripe } from "../../../config/stripe";
 import { createStripeCustomerAcc } from "../../helper/createStripeCustomerAcc";
-import { STATUS_CODES } from "http";
 
 const prisma = new PrismaClient();
 const logInFromDB = async (payload: {
@@ -16,52 +14,53 @@ const logInFromDB = async (payload: {
   password: string;
   fcmToken?: string;
 }) => {
-  const findUser = await prisma.user.findUnique({
-    where: {
-      email: payload.email.trim(),
-    },
+  const user = await prisma.user.findUnique({
+    where: { email: payload.email.trim() },
   });
-  if (!findUser) {
-    throw new ApiError(StatusCodes.NOT_FOUND, "User not found");
+
+  // Generic error (prevents user enumeration)
+  if (!user || !user.password) {
+    throw new ApiError(StatusCodes.UNAUTHORIZED, "Invalid email or password");
   }
-  const comparePassword = await compare(payload.password, findUser.password);
-  if (!comparePassword) {
+
+  // Check verification BEFORE password compare
+  if (user.status === "PENDING" && !user.isVerified) {
+    OTPFn(user.email);
     throw new ApiError(
       StatusCodes.UNAUTHORIZED,
-      "Invalid password"
+      "Please verify your email before logging in"
     );
   }
 
-  if (findUser.status === "PENDING" && !findUser.isVerified) {
-    OTPFn(findUser.email);
-    throw new ApiError(
-      StatusCodes.UNAUTHORIZED,
-      "Please check your email address to verify your account"
-    );
+  const isMatch = await compare(payload.password, user.password);
+  if (!isMatch) {
+    throw new ApiError(StatusCodes.UNAUTHORIZED, "Invalid email or password");
   }
 
+  // Update FCM token
   if (payload.fcmToken) {
     await prisma.user.update({
-      where: {
-        email: payload.email,
-      },
-      data: {
-        fcmToken: payload.fcmToken,
-      },
+      where: { id: user.id },
+      data: { fcmToken: payload.fcmToken },
     });
   }
-  const userInfo = {
-    email: findUser.email,
-    name: findUser.name,
-    id: findUser.id,
-    image: findUser.image,
-    role: findUser.role,
-    status: findUser.status,
-    fcmToken: findUser.fcmToken,
+
+  const safeUserInfo = {
+    id: user.id,
+    email: user.email,
+    name: user.name,
+    image: user.image,
+    role: user.role,
+    status: user.status,
+    fcmToken: payload.fcmToken ?? user.fcmToken,
   };
-  const token = jwtHelpers.generateToken(userInfo, { expiresIn: "24h" });
-  return { accessToken: token, ...userInfo };
+
+  const tokenPayload = { id: user.id, role: user.role };
+  const accessToken = jwtHelpers.generateToken(tokenPayload, "LOGIN");
+
+  return { accessToken, user: safeUserInfo };
 };
+
 
 const verifyOtp = async (payload: { email: string; otp: number }) => {
   const { message } = await OTPVerify({ ...payload, time: "1h" });

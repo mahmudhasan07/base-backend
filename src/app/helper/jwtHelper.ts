@@ -1,10 +1,12 @@
 import jwt, { JwtPayload, Secret, } from 'jsonwebtoken';
 import config from '../../config';
+import { TOKEN_EXPIRY, TokenType } from '../../utils/tokenConfig';
 
 
-const generateToken = (payload: any, expiresIn: any) => {
+const generateToken = (payload: any, tokenType: TokenType) => {
     // const token = jwt.sign(payload, secret, options);
-    const token = jwt.sign(payload, config.secretToken as Secret , { expiresIn: expiresIn.expiresIn, algorithm: 'HS256', });
+    const expiry = TOKEN_EXPIRY[tokenType];
+    const token = jwt.sign(payload, config.secretToken as Secret, { expiresIn: expiry, algorithm: 'HS256', });
 
     return token;
 };
