@@ -41,10 +41,9 @@ model Otp {
   email     String    @unique
   otp       Int
   expiry    DateTime?
+  attempts Int @default(0)
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
-
-  @@map("otps")
 }
 
 model Service {

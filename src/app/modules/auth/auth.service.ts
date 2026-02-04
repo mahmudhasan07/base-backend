@@ -63,7 +63,7 @@ const logInFromDB = async (payload: {
 
 
 const verifyOtp = async (payload: { email: string; otp: number }) => {
-  const { message } = await OTPVerify({ ...payload, time: "1h" });
+  const { message } = await OTPVerify({ ...payload});
 
   if (message) {
     const updateUserInfo = await prisma.user.update({
@@ -105,9 +105,15 @@ const forgetPassword = async (payload: { email: string }) => {
 };
 
 const resetOtpVerify = async (payload: { email: string; otp: number }) => {
-  const { accessToken } = await OTPVerify({ ...payload, time: "1h" });
+  const { message } = await OTPVerify({ ...payload});
 
-  return accessToken;
+  if (message) {
+    const accessToken = jwtHelpers.generateToken(
+      { email: payload.email },
+      "PASSWORD_RESET"
+    );
+    return accessToken;
+  }
 };
 
 const resendOtp = async (payload: { email: string }) => {
@@ -149,7 +155,7 @@ const socialLogin = async (payload: {
   if (userData) {
     const accessToken = jwtHelpers.generateToken(
       { id: userData.id, email: userData.email, role: userData.role },
-      { expiresIn: "24h" }
+      "LOGIN"
     );
     return {
       ...userData,
@@ -179,7 +185,7 @@ const socialLogin = async (payload: {
 
     const accessToken = jwtHelpers.generateToken(
       { id: result.id, email: result.email, role: result.role },
-      { expiresIn: "24h" }
+      "LOGIN"
     );
     return {
       ...result,
