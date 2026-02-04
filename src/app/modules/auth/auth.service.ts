@@ -9,21 +9,34 @@ import { StatusCodes } from "http-status-codes";
 import { createStripeCustomerAcc } from "../../helper/createStripeCustomerAcc";
 
 const prisma = new PrismaClient();
-const logInFromDB = async (payload: {
-  email: string;
-  password: string;
-  fcmToken?: string;
-}) => {
+const logInFromDB = async (payload: { email: string; password: string; fcmToken?: string }) => {
   const user = await prisma.user.findUnique({
     where: { email: payload.email.trim() },
   });
 
-  // Generic error (prevents user enumeration)
   if (!user || !user.password) {
     throw new ApiError(StatusCodes.UNAUTHORIZED, "Invalid email or password");
   }
 
-  // Check verification BEFORE password compare
+  // Check if account is locked
+  if (user.lockUntil && user.lockUntil > new Date()) {
+    // Format the lockUntil date to a readable string
+    const unlockTime = user.lockUntil.toLocaleString("en-US", {
+      hour12: false,
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+
+    throw new ApiError(
+      StatusCodes.UNAUTHORIZED,
+      `Too many failed attempts. You can try again after ${unlockTime} or reset your password`
+    );
+  }
+
+  // Check verification
   if (user.status === "PENDING" && !user.isVerified) {
     OTPFn(user.email);
     throw new ApiError(
@@ -33,17 +46,29 @@ const logInFromDB = async (payload: {
   }
 
   const isMatch = await compare(payload.password, user.password);
+
   if (!isMatch) {
+    let updateData: any = { attempts: user.attempts + 1 };
+
+    // Lock account if attempts >= 5
+    if (updateData.attempts >= 5) {
+      updateData.lockUntil = new Date(Date.now() + 20 * 60 * 1000); // 20 minutes from now
+      updateData.attempts = 0; // reset attempts after locking
+    }
+
+    await prisma.user.update({
+      where: { id: user.id },
+      data: updateData,
+    });
+
     throw new ApiError(StatusCodes.UNAUTHORIZED, "Invalid email or password");
   }
 
-  // Update FCM token
-  if (payload.fcmToken) {
-    await prisma.user.update({
-      where: { id: user.id },
-      data: { fcmToken: payload.fcmToken },
-    });
-  }
+  // Successful login → reset attempts & lockUntil
+  await prisma.user.update({
+    where: { id: user.id },
+    data: { attempts: 0, lockUntil: null, fcmToken: payload.fcmToken ?? user.fcmToken },
+  });
 
   const safeUserInfo = {
     id: user.id,
@@ -62,8 +87,9 @@ const logInFromDB = async (payload: {
 };
 
 
+
 const verifyOtp = async (payload: { email: string; otp: number }) => {
-  const { message } = await OTPVerify({ ...payload});
+  const { message } = await OTPVerify({ ...payload });
 
   if (message) {
     const updateUserInfo = await prisma.user.update({
@@ -105,7 +131,7 @@ const forgetPassword = async (payload: { email: string }) => {
 };
 
 const resetOtpVerify = async (payload: { email: string; otp: number }) => {
-  const { message } = await OTPVerify({ ...payload});
+  const { message } = await OTPVerify({ ...payload });
 
   if (message) {
     const accessToken = jwtHelpers.generateToken(
@@ -195,23 +221,22 @@ const socialLogin = async (payload: {
 };
 
 const resetPassword = async (payload: { token: string; password: string }) => {
-  const { email, exp } = jwtHelpers.tokenDecoder(payload.token) as JwtPayload;
-
-  if (exp && exp < Date.now() / 1000) {
-    throw new ApiError(StatusCodes.UNAUTHORIZED, "Token expired");
+  let decoded: JwtPayload;
+  try {
+    decoded = jwtHelpers.verifyToken(payload.token) as JwtPayload; // verifies signature
+  } catch (err) {
+    throw new ApiError(StatusCodes.UNAUTHORIZED, "Invalid or expired token");
   }
 
-  const findUser = await prisma.user.findUnique({
-    where: {
-      email: email,
-    },
-  });
+  const { email } = decoded;
+
+  const findUser = await prisma.user.findUnique({ where: { email } });
   if (!findUser) {
     throw new ApiError(StatusCodes.NOT_FOUND, "User not found");
   }
 
-  const comparePassword = await compare(payload.password, findUser.password);
-  if (comparePassword) {
+  const isSamePassword = await compare(payload.password, findUser.password);
+  if (isSamePassword) {
     throw new ApiError(
       StatusCodes.BAD_REQUEST,
       "New password should be different from old password"
@@ -219,13 +244,10 @@ const resetPassword = async (payload: { token: string; password: string }) => {
   }
 
   const hashedPassword = await hash(payload.password, 10);
-  const result = await prisma.user.update({
-    where: {
-      email: email,
-    },
-    data: {
-      password: hashedPassword,
-    },
+
+  const updatedUser = await prisma.user.update({
+    where: { email },
+    data: { password: hashedPassword },
     select: {
       id: true,
       name: true,
@@ -234,10 +256,12 @@ const resetPassword = async (payload: { token: string; password: string }) => {
       status: true,
       createdAt: true,
       updatedAt: true,
-    }
+    },
   });
-  return result;
+
+  return updatedUser;
 };
+
 
 export const authService = {
   logInFromDB,

@@ -29,12 +29,15 @@ model User {
   connectAccountId String?
   subscriptionPlan SubscriptionPlan?
   isVerified       Boolean           @default(false)
+  attempts         Int               @default(0)
+  lockUntil        DateTime?         // add this
   createdAt        DateTime          @default(now())
   updatedAt        DateTime          @updatedAt
   receiver         Notifications[]   @relation("receiverDetails")
   sender           Notifications[]   @relation("senderDetails")
   Review           Review[]
 }
+
 
 model Otp {
   id        String    @id @default(auto()) @map("_id") @db.ObjectId
