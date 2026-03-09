@@ -20,6 +20,7 @@ export const PrismaConnection = async () => {
                 password: newPass,
                 name : "Admin",
                 role: "ADMIN",
+                isVerified: true,
                 status: "ACTIVE",
             }
         })
